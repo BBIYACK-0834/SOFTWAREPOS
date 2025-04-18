@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>테이블 시뮬레이션</title>
@@ -43,7 +43,7 @@
 <!-- 하단 버튼 -->
 <button id="simulate-btn" class="btn btn-success btn-large">상품 관리</button>
 
-<script>
+<script th:inline="javascript">
     const setTableBtn = document.getElementById('set-table-count');
     const tableContainer = document.getElementById('table-container');
     const simulateBtn = document.getElementById('simulate-btn');
@@ -66,9 +66,8 @@
         }
     });
 
-    // ✅ 시뮬레이션 이동 기능
     simulateBtn.addEventListener('click', () => {
-        location.href = "/prodmanage";
+        location.href = /*[[@{/prodmanage}]]*/ "/prodmanage";
     });
 </script>
 
