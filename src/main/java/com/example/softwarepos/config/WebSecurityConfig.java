@@ -24,43 +24,23 @@ public class WebSecurityConfig {
 
     private final UserDetailService userService;
 
-    // ✅ 정적 자원 전체 허용 설정
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(
-                new AntPathRequestMatcher("/css/**"),
-                new AntPathRequestMatcher("/js/**"),
-                new AntPathRequestMatcher("/images/**"),
-                new AntPathRequestMatcher("/static/**"),
-                new AntPathRequestMatcher("/**/*.html") // 모든 정적 HTML도 허용
-        );
-    }
-
     // ✅ Security 필터 체인 설정
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                new AntPathRequestMatcher("/login"),
-                                new AntPathRequestMatcher("/signup"),
-                                new AntPathRequestMatcher("/user")
+                                "/user/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/index")
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
-                )
-                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.disable()) // 세션 비활성화
+                .formLogin(AbstractHttpConfigurer::disable) // formLogin 완전 제거
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }
+
 
     // ✅ AuthenticationManager 설정
     @Bean

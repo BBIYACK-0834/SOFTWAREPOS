@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>테이블 시뮬레이션</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px;
+        }
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-gap: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .table-grid button {
+            height: 100px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .btn-large {
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 상단 버튼 -->
+<button id="set-table-count" class="btn btn-primary btn-large">테이블 개수 설정</button>
+
+<!-- 테이블 버튼들 -->
+<div id="table-container" class="table-grid my-5"></div>
+
+<!-- 하단 버튼 -->
+<button id="simulate-btn" class="btn btn-success btn-large">상품 관리</button>
+
+<script th:inline="javascript">
+    const setTableBtn = document.getElementById('set-table-count');
+    const tableContainer = document.getElementById('table-container');
+    const simulateBtn = document.getElementById('simulate-btn');
+
+    setTableBtn.addEventListener('click', () => {
+        let count = prompt("테이블 개수를 입력하세요:", "9");
+        if (count === null || isNaN(count) || count <= 0) {
+            alert("올바른 숫자를 입력해주세요.");
+            return;
+        }
+
+        tableContainer.innerHTML = "";
+
+        for (let i = 1; i <= count; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-outline-dark';
+            btn.textContent = i;
+            btn.onclick = () => alert(`테이블 ${i} 클릭됨`);
+            tableContainer.appendChild(btn);
+        }
+    });
+
+    simulateBtn.addEventListener('click', () => {
+        location.href = /*[[@{/prodmanage}]]*/ "/prodmanage";
+    });
+</script>
+
+</body>
+</html>
