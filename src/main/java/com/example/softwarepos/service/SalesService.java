@@ -24,11 +24,29 @@ public class SalesService {
                 .prodIntro(dto.getProdIntro())
                 .prodStatus(dto.getProdStatus())
                 .prodPri(dto.getProdPri())
-                .prodImage(dto.getProdImage())
-                .paymentCompleted(dto.getPaymentCompleted())
-                .tableCount(dto.getTableCount())
                 .build();
 
         salesRepository.save(product);
     }
+    public void updateProduct(Long prodNum, Salesdto dto) {
+        SalesEntity existing = salesRepository.findById(prodNum)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + prodNum));
+
+        SalesEntity updated = SalesEntity.builder()
+                .prodNum(prodNum)
+                .prodName(dto.getProdName())
+                .prodIntro(dto.getProdIntro())
+                .prodStatus(dto.getProdStatus())
+                .prodPri(dto.getProdPri())
+                .build();
+
+        salesRepository.save(updated);
+    }
+
+    public void deleteProduct(Long prodNum) {
+        SalesEntity existing = salesRepository.findById(prodNum)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + prodNum));
+        salesRepository.delete(existing);
+    }
+
 }

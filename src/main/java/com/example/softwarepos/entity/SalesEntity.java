@@ -28,12 +28,4 @@ public class SalesEntity {
     @Column(name = "prod_pri", nullable = false)
     private String prodPri;
 
-    @Column(name = "table_count", nullable = false)
-    private Long tableCount;
-
-    @Column(name = "prod_image")
-    private String prodImage;
-
-    @Column(name = "payment_completed")
-    private Boolean paymentCompleted;
 }

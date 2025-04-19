@@ -13,8 +13,5 @@ public class Salesdto {
     private String prodIntro;
     private String prodStatus;
     private String prodPri;
-    private String prodImage;
-    private Boolean paymentCompleted;
-    private Long tableCount;
 }
 
