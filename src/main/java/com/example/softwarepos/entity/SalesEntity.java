@@ -26,6 +26,6 @@ public class SalesEntity {
     private String prodStatus;
 
     @Column(name = "prod_pri", nullable = false)
-    private String prodPri;
+    private Long prodPri;
 
 }
