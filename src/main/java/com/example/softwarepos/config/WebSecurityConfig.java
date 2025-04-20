@@ -31,7 +31,8 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/user/**"
+                                "/user/**",
+                                "/**" //개발을 완료 혹은 프론트 개발이 종료될 때까지는 전체 권한주기
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
