@@ -12,6 +12,6 @@ public class Salesdto {
     private String prodName;
     private String prodIntro;
     private String prodStatus;
-    private String prodPri;
+    private Long prodPri;
 }
 
