@@ -6,7 +6,8 @@ import com.example.softwarepos.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class SalesService {
 
         salesRepository.save(product);
     }
+
     public void updateProduct(Long prodNum, Salesdto dto) {
         SalesEntity existing = salesRepository.findById(prodNum)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + prodNum));
@@ -49,4 +51,13 @@ public class SalesService {
         salesRepository.delete(existing);
     }
 
+    public List<Salesdto> getAllProducts() {
+        return salesRepository.findAll().stream().map(product -> Salesdto.builder()
+                .prodNum(product.getProdNum())
+                .prodName(product.getProdName())
+                .prodIntro(product.getProdIntro())
+                .prodStatus(product.getProdStatus())
+                .prodPri(product.getProdPri())
+                .build()).collect(Collectors.toList());
+    }
 }

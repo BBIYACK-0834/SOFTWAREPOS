@@ -5,10 +5,11 @@ import com.example.softwarepos.entity.OrderEntity;
 import com.example.softwarepos.entity.SalesEntity;
 import com.example.softwarepos.repository.OrderRepository;
 import com.example.softwarepos.repository.SalesRepository;
-import lombok.RequiredArgsConstructor;
+lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
 
         OrderEntity order = OrderEntity.builder()
-                .sales(sales) // JPA가 관리하는 엔티티를 넣어야 함
+                .sales(sales)
                 .quantity(dto.getQuantity())
                 .totalPrice(dto.getTotalPrice())
                 .tableCount(dto.getTableCount())
@@ -51,8 +52,17 @@ public class OrderService {
         }
         orderRepository.deleteById(orderNum);
     }
-    public List<OrderEntity> getOrdersByTableCount(Long TableCount) {
-        return orderRepository.findAllByTableCount(TableCount);
-    }
 
+    public List<Orderdto> getOrdersByTableCount(Long tableCount) {
+        List<OrderEntity> entities = orderRepository.findAllByTableCount(tableCount);
+        return entities.stream().map(order -> Orderdto.builder()
+                .orderNum(order.getOrderNum())
+                .sales(order.getSales())
+                .quantity(order.getQuantity())
+                .totalPrice(order.getTotalPrice())
+                .orderedAt(order.getOrderedAt())
+                .TableCount(order.getTableCount())
+                .build()
+        ).collect(Collectors.toList());
+    }
 }

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>테이블 관리</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: auto;
+            gap: 20px;
+        }
+
+        .table-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid black;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>테이블 선택</h1>
+<div id="tableGrid" class="table-grid">
+    <!-- JS에서 동적으로 생성 -->
+</div>
+<div class="controls">
+    <button onclick="location.href='/admin/products'">상품 등록</button>
+    <button onclick="location.href='/admin/tablecount'">테이블 개수</button>
+</div>
+
+<script>
+    // API에서 테이블 개수 fetch
+    fetch('/api/tablecount') // 예시 URL
+        .then(res => res.json())
+        .then(data => {
+            const count = data.count; // 예시: { count: 8 }
+            const grid = document.getElementById('tableGrid');
+            for (let i = 1; i <= count; i++) {
+                const div = document.createElement('div');
+                div.className = 'table-box';
+                div.textContent = i;
+                div.onclick = () => {
+                    location.href = `/user/order/${i}`;
+                };
+                grid.appendChild(div);
+            }
+        })
+        .catch(err => {
+            console.error('테이블 개수 가져오기 실패:', err);
+        });
+</script>
+</body>
+</html>

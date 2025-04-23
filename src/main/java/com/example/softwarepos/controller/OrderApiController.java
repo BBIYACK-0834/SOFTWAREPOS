@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
@@ -30,13 +32,14 @@ public class OrderApiController {
         orderService.deleteOrder(orderNum);
         return ResponseEntity.ok("주문 삭제 완료");
     }
+
     @GetMapping("/user/order/{tableCount}")
-    public ResponseEntity<?> getOrdersByTable(@PathVariable Long tableCount) {
+    public ResponseEntity<List<Orderdto>> getOrdersByTable(@PathVariable Long tableCount) {
         try {
             return ResponseEntity.ok(orderService.getOrdersByTableCount(tableCount));
         } catch (Exception e) {
-            e.printStackTrace(); // 콘솔에 전체 예외 출력
-            return ResponseEntity.status(500).body("에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
         }
     }
 
