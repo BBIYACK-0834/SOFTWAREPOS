@@ -5,7 +5,7 @@ import com.example.softwarepos.entity.OrderEntity;
 import com.example.softwarepos.entity.SalesEntity;
 import com.example.softwarepos.repository.OrderRepository;
 import com.example.softwarepos.repository.SalesRepository;
-lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

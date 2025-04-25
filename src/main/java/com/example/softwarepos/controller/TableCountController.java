@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/admin/tablecount")
 @RequiredArgsConstructor
@@ -16,18 +19,19 @@ public class TableCountController {
     @PostMapping
     public ResponseEntity<?> save(@RequestBody TableCountDto dto) {
         Long id = tableCountService.saveTableCount(dto);
-        return ResponseEntity.ok("처음 저장 완료, ID: " + id);
+        return ResponseEntity.ok(id); // 새로 저장된 테이블 개수 ID 반환
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody TableCountDto dto) {
-        tableCountService.updateTableCount(dto);
-        return ResponseEntity.ok("테이블 개수 수정 완료");
+    public ResponseEntity<Void> update(@RequestBody TableCountDto dto) {
+        tableCountService.updateTableCount(dto); // 테이블 개수 업데이트
+        return ResponseEntity.noContent().build();  // 응답 본문 없이 상태 코드만 반환 (204 No Content)
     }
+
 
     @GetMapping
     public ResponseEntity<?> getCurrentCount() {
-        Long count = tableCountService.getCurrentTableCount();
-        return ResponseEntity.ok("현재 테이블 개수: " + count);
+        Long count = tableCountService.getCurrentTableCount(); // 현재 테이블 개수 조회
+        return ResponseEntity.ok(count);  // 테이블 개수만 반환
     }
 }

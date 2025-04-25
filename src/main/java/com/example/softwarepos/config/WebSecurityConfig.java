@@ -14,13 +14,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class WebSecurityConfig {
+public class WebSecurityConfig implements WebMvcConfigurer {
 
     private final UserDetailService userService;
 
@@ -32,16 +34,17 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/user/**",
-                                "/**" //개발을 완료 혹은 프론트 개발이 종료될 때까지는 전체 권한주기
+                                "/**" // 개발을 완료 혹은 프론트 개발이 종료될 때까지는 전체 권한 주기
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.disable()) // 세션 비활성화
                 .formLogin(AbstractHttpConfigurer::disable) // formLogin 완전 제거
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .cors()  // CORS 필터 추가
+                .and()
                 .build();
     }
-
 
     // ✅ AuthenticationManager 설정
     @Bean
@@ -59,5 +62,15 @@ public class WebSecurityConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // ✅ CORS 설정
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")  // 모든 경로에 대해 CORS 허용
+                .allowedOrigins("http://localhost:63342")  // 클라이언트 주소 (CORS 허용할 도메인)
+                .allowedMethods("GET", "POST", "PUT", "DELETE")  // 허용할 HTTP 메소드들
+                .allowedHeaders("*")  // 모든 헤더 허용
+                .allowCredentials(true);  // 쿠키를 포함한 요청 허용
     }
 }

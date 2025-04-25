@@ -33,14 +33,13 @@ public class OrderApiController {
         return ResponseEntity.ok("주문 삭제 완료");
     }
 
-    @GetMapping("/user/order/{tableCount}")
-    public ResponseEntity<List<Orderdto>> getOrdersByTable(@PathVariable Long tableCount) {
+    @GetMapping("/user/order/{tableNumber}")
+    public ResponseEntity<List<Orderdto>> getOrdersByTable(@PathVariable Long tableNumber) {
         try {
-            return ResponseEntity.ok(orderService.getOrdersByTableCount(tableCount));
+            return ResponseEntity.ok(orderService.getOrdersByTableCount(tableNumber));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
-
 }
