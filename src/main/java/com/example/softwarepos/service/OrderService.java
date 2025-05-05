@@ -19,14 +19,16 @@ public class OrderService {
     private final SalesRepository salesRepository;
 
     public Long createOrder(Orderdto dto) {
-        SalesEntity sales = salesRepository.findById(dto.getSales().getProdNum())
+        SalesEntity sales = salesRepository.findByProdName(dto.getProdName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+
+        Long totalPrice = sales.getProdPri() * dto.getQuantity();
 
         OrderEntity order = OrderEntity.builder()
                 .sales(sales)
                 .quantity(dto.getQuantity())
-                .totalPrice(dto.getTotalPrice())
-                .tableCount(dto.getTableCount())
+                .tableCount(dto.getTableNumber())
+                .totalPrice(totalPrice)
                 .build();
 
         return orderRepository.save(order).getOrderNum();
@@ -36,33 +38,37 @@ public class OrderService {
         OrderEntity order = orderRepository.findById(orderNum)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
 
-        SalesEntity sales = salesRepository.findById(dto.getSales().getProdNum())
+        SalesEntity sales = salesRepository.findByProdName(dto.getProdName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품을 찾을 수 없습니다."));
+
+        Long totalPrice = sales.getProdPri() * dto.getQuantity();
 
         order.setSales(sales);
         order.setQuantity(dto.getQuantity());
-        order.setTotalPrice(dto.getTotalPrice());
+        order.setTableCount(dto.getTableNumber());
+        order.setTotalPrice(totalPrice);
 
         orderRepository.save(order);
     }
 
     public void deleteOrder(Long orderNum) {
-        if (!orderRepository.existsById(orderNum)) {
-            throw new IllegalArgumentException("해당 주문을 찾을 수 없습니다.");
-        }
-        orderRepository.deleteById(orderNum);
+        OrderEntity order = orderRepository.findById(orderNum)
+                .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
+
+        orderRepository.delete(order);
     }
 
+
     public List<Orderdto> getOrdersByTableCount(Long tableCount) {
-        List<OrderEntity> entities = orderRepository.findAllByTableCount(tableCount);
-        return entities.stream().map(order -> Orderdto.builder()
-                .orderNum(order.getOrderNum())
-                .sales(order.getSales())
-                .quantity(order.getQuantity())
-                .totalPrice(order.getTotalPrice())
-                .orderedAt(order.getOrderedAt())
-                .TableCount(order.getTableCount())
-                .build()
-        ).collect(Collectors.toList());
+        return orderRepository.findAllByTableCount(tableCount).stream()
+                .map(order -> Orderdto.builder()
+                        .orderNum(order.getOrderNum())
+                        .prodName(order.getSales().getProdName())
+                        .quantity(order.getQuantity())
+                        .totalPrice(order.getTotalPrice())
+                        .orderedAt(order.getOrderedAt())
+                        .tableNumber(order.getTableCount())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

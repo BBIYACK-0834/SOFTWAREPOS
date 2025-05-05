@@ -2,65 +2,71 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주문 목록</title>
+    <title>테이블 주문 관리</title>
     <style>
-        /* 테이블 영역 스타일 */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
         .table-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3개씩 테이블을 배치 */
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin-top: 20px;
         }
+
         .table-box {
-            width: 150px;
-            height: 150px;
-            border: 1px solid #ccc;
+            width: 200px;
+            min-height: 150px;
+            border: 2px solid #333;
             border-radius: 10px;
             text-align: center;
             padding: 10px;
-            box-sizing: border-box;
-        }
-        .table-box button {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+            background-color: white;
             cursor: pointer;
         }
-        .table-box button:hover {
-            background-color: #45a049;
+
+        .order-list {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: left;
         }
 
-        /* 추가 테이블 개수 입력 및 저장 */
+        .order-item {
+            margin-bottom: 5px;
+        }
+
         #addTableContainer {
             margin-top: 20px;
+            text-align: center;
         }
+
         #tableCountInput {
             padding: 5px;
-            margin-right: 10px;
+            width: 200px;
         }
     </style>
 </head>
 <body>
-<h1>테이블 번호에 따른 주문 목록</h1>
 
-<h2>주문 목록</h2>
+<h1>테이블 주문 관리</h1>
 
-<!-- 테이블 개수 추가 및 저장 -->
 <div id="addTableContainer">
     <label for="tableCountInput">새로운 테이블 개수 추가:</label>
     <input type="number" id="tableCountInput" min="1" placeholder="테이블 개수 입력">
     <button onclick="addTables()">테이블 개수 저장</button>
 </div>
 
-<!-- 테이블 목록 표시 -->
 <div id="tableContainer" class="table-container"></div>
 
 <script>
-    // 페이지 로드 시 테이블 개수를 가져오고 테이블 생성
-    window.onload = function() {
+    window.onload = function () {
         fetch('http://localhost:8080/admin/tablecount')
             .then(response => response.json())
             .then(count => {
@@ -76,129 +82,85 @@
             });
     };
 
-    // 테이블 목록 생성
-    function createTables(tableCount) {
-        const tableContainer = document.getElementById('tableContainer');
-        tableContainer.innerHTML = ''; // 기존 테이블 초기화
+    function createTables(count) {
+        const container = document.getElementById('tableContainer');
+        container.innerHTML = '';
 
-        for (let i = 1; i <= tableCount; i++) {
-            const tableBox = document.createElement('div');
-            tableBox.classList.add('table-box');
-            tableBox.innerHTML = `<h3>테이블 ${i}</h3>`;
+        for (let i = 1; i <= count; i++) {
+            const box = document.createElement('div');
+            box.className = 'table-box';
+            box.setAttribute('data-table', i);
+            box.innerHTML = `<h3>테이블 ${i}</h3><div class="order-list" id="order-list-${i}">조회 중...</div>`;
 
-            const button = document.createElement('button');
-            button.textContent = '주문 목록 조회';
-            button.onclick = () => getOrders(i);  // 테이블 번호 전달
-            tableBox.appendChild(button);
+            box.addEventListener('click', () => {
+                window.location.href = `order.html?table=${i}`;
+            });
 
-            const orderList = document.createElement('ul');
-            tableBox.appendChild(orderList); // 주문 목록 추가
-            tableBox.setAttribute('id', 'table-' + i); // 각 테이블에 고유 ID 부여
-
-            tableContainer.appendChild(tableBox);
+            container.appendChild(box);
+            fetchOrders(i);
         }
     }
 
-    // 주문 목록 조회 함수
-    function getOrders(tableNumber) {
+    function fetchOrders(tableNumber) {
         fetch(`http://localhost:8080/user/order/${tableNumber}`)
             .then(response => response.json())
             .then(data => {
-                const tableBox = document.getElementById('table-' + tableNumber);
-                const orderList = tableBox.querySelector('ul');
-                orderList.innerHTML = ''; // 기존 목록 비우기
+                const listDiv = document.getElementById(`order-list-${tableNumber}`);
+                listDiv.innerHTML = '';
 
                 if (data.length === 0) {
-                    orderList.innerHTML = '<li>주문 내역이 없습니다.</li>';
-                } else {
-                    data.forEach(order => {
-                        const li = document.createElement('li');
-                        li.textContent = `주문 번호: ${order.id}, 상품: ${order.productName}, 수량: ${order.quantity}`;
-                        orderList.appendChild(li);
-                    });
+                    listDiv.textContent = '주문 없음';
+                    return;
                 }
+
+                data.forEach(order => {
+                    const item = document.createElement('div');
+                    item.className = 'order-item';
+                    item.textContent = `${order.prodName} - ${order.quantity}개`;
+                    listDiv.appendChild(item);
+                });
             })
             .catch(error => {
-                console.error('주문 목록 조회 중 오류가 발생했습니다:', error);
-                alert('주문 목록을 가져오는 데 실패했습니다.');
+                console.error('주문 조회 실패:', error);
+                alert('주문을 불러오는 데 실패했습니다.');
             });
     }
 
-    // 테이블 개수 저장 및 추가
     function addTables() {
-        const tableCountInput = document.getElementById('tableCountInput');
-        const tableCount = parseInt(tableCountInput.value, 10);
+        const input = document.getElementById('tableCountInput');
+        const newCount = parseInt(input.value);
 
-        if (isNaN(tableCount) || tableCount <= 0) {
-            alert('유효한 테이블 개수를 입력해주세요!');
+        if (isNaN(newCount) || newCount <= 0) {
+            alert('유효한 테이블 개수를 입력하세요.');
             return;
         }
 
-        // 먼저 테이블 개수가 이미 등록되어 있는지 확인
         fetch('http://localhost:8080/admin/tablecount')
-            .then(response => {
-                if (!response.ok) {
-                    // 응답이 200이 아니면 오류 처리
-                    throw new Error('서버 응답이 잘못되었습니다. 상태 코드: ' + response.status);
-                }
-                return response.json();  // 응답을 JSON으로 파싱
-            })
-            .then(count => {
-                if (count > 0) {
-                    // 이미 테이블 개수가 존재하면 PUT 요청으로 수정
-                    fetch('http://localhost:8080/admin/tablecount', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ count: tableCount })
+            .then(res => res.json())
+            .then(currentCount => {
+                const method = currentCount > 0 ? 'PUT' : 'POST';
+
+                fetch('http://localhost:8080/admin/tablecount', {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: newCount })
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('테이블 수 저장 실패');
+                        alert('테이블 수가 저장되었습니다.');
+                        window.location.reload();
                     })
-                        .then(response => {
-                            if (response.status === 204) {
-                                // 204 No Content는 본문이 없기 때문에 JSON 파싱을 시도하지 않음
-                                alert('테이블 개수 수정 완료');
-                                window.location.reload();  // 페이지 새로고침하여 새로운 테이블 수로 갱신
-                            } else {
-                                return response.json();  // JSON 파싱을 시도
-                            }
-                        })
-                        .then(data => {
-                            // 204 No Content가 아닌 경우에만 data를 사용
-                            if (data) {
-                                alert(`테이블 개수 수정: ${tableCount}`);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('테이블 개수 수정 중 오류가 발생했습니다:', error);
-                            alert('테이블 개수 수정 중 오류가 발생했습니다.');
-                        });
-                } else {
-                    // 테이블 개수가 없으면 POST 요청으로 저장
-                    fetch('http://localhost:8080/admin/tablecount', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ count: tableCount })
-                    })
-                        .then(response => response.json())
-                        .then(() => {
-                            alert(`테이블 개수 저장: ${tableCount}`);
-                            window.location.reload();  // 페이지 새로고침하여 새로운 테이블 수로 갱신
-                        })
-                        .catch(error => {
-                            console.error('테이블 개수 저장 중 오류가 발생했습니다:', error);
-                            alert('테이블 개수를 저장하는 데 실패했습니다.');
-                        });
-                }
+                    .catch(err => {
+                        console.error('저장 오류:', err);
+                        alert('테이블 저장 중 오류 발생');
+                    });
             })
-            .catch(error => {
-                console.error('테이블 개수 확인 중 오류가 발생했습니다:', error);
-                alert('테이블 개수를 확인하는 데 실패했습니다.');
+            .catch(err => {
+                console.error('현재 테이블 수 확인 실패:', err);
+                alert('테이블 개수를 확인할 수 없습니다.');
             });
     }
-
-
 </script>
+
 </body>
 </html>
