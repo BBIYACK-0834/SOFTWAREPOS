@@ -73,7 +73,6 @@
             background-color: #388e3c;
         }
 
-        /* 홈 버튼 스타일 */
         #homeButton {
             position: absolute;
             top: 20px;
@@ -116,56 +115,7 @@
 
 <button id="addProductBtn" onclick="location.href='addProduct.html'">상품 추가</button>
 
-<script>
-    window.onload = () => {
-        fetch('http://localhost:8080/admin/products')
-            .then(res => res.json())
-            .then(products => {
-                const tbody = document.getElementById('productTableBody');
-                products.forEach(prod => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${prod.prodNum}</td>
-                        <td>${prod.prodName}</td>
-                        <td>${prod.prodIntro}</td>
-                        <td>${prod.prodStatus}</td>
-                        <td>${prod.prodPri.toLocaleString()}원</td>
-                        <td>
-                            <button class="edit-button" onclick="editProduct(${prod.prodNum})">수정</button>
-                            <button class="delete-button" onclick="deleteProduct(${prod.prodNum}, this)">삭제</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            })
-            .catch(err => {
-                console.error('상품 목록 로드 실패:', err);
-                alert('상품 목록을 불러오지 못했습니다.');
-            });
-    };
-
-    function editProduct(prodNum) {
-        window.location.href = `editProduct.html?prodNum=${prodNum}`;
-    }
-
-    function deleteProduct(prodNum, button) {
-        if (!confirm(`정말로 상품 번호 ${prodNum}를 삭제하시겠습니까?`)) return;
-
-        fetch(`http://localhost:8080/admin/products/${prodNum}`, {
-            method: 'DELETE'
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('삭제 실패');
-                alert('상품이 삭제되었습니다.');
-                const row = button.closest('tr');
-                row.remove();
-            })
-            .catch(err => {
-                console.error('삭제 중 오류:', err);
-                alert('상품 삭제에 실패했습니다.');
-            });
-    }
-</script>
+<script src="sales.js"></script>
 
 </body>
 </html>
