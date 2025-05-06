@@ -53,4 +53,15 @@ public class SalesApiController {
     public ResponseEntity<List<Salesdto>> getAllProducts() {
         return ResponseEntity.ok(salesService.getAllProducts());
     }
+
+    // ✅ 개별 상품 조회
+    @GetMapping("/{prodNum}")
+    public ResponseEntity<?> getProduct(@PathVariable Long prodNum) {
+        try {
+            Salesdto dto = salesService.getProductByNum(prodNum);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

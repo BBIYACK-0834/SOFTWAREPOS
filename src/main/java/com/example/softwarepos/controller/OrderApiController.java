@@ -42,4 +42,8 @@ public class OrderApiController {
             return ResponseEntity.status(500).build();
         }
     }
+    @GetMapping("/user/order/all")
+    public ResponseEntity<List<Orderdto>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
 }

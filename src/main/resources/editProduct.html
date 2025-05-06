@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 수정</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>상품 수정</h1>
+
+<form id="productForm">
+    <label for="prodName">상품명</label>
+    <input type="text" id="prodName" name="prodName" required>
+
+    <label for="prodIntro">상품 소개</label>
+    <input type="text" id="prodIntro" name="prodIntro">
+
+    <label for="prodStatus">상품 상태</label>
+    <select id="prodStatus" name="prodStatus">
+        <option value="판매중">판매중</option>
+        <option value="품절">품절</option>
+        <option value="숨김">숨김</option>
+    </select>
+
+    <label for="prodPri">상품 가격</label>
+    <input type="number" id="prodPri" name="prodPri" required>
+
+    <button type="submit">저장</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('productForm');
+        const urlParams = new URLSearchParams(window.location.search);
+        const prodNum = urlParams.get('prodNum');
+
+        if (!prodNum) {
+            alert('상품 번호가 없습니다.');
+            return;
+        }
+
+        // 기존 상품 정보 불러오기
+        fetch(`http://localhost:8080/admin/products/${prodNum}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('prodName').value = data.prodName;
+                document.getElementById('prodIntro').value = data.prodIntro;
+                document.getElementById('prodStatus').value = data.prodStatus;
+                document.getElementById('prodPri').value = data.prodPri;
+            })
+            .catch(err => {
+                alert('상품 정보를 불러오지 못했습니다.');
+                console.error(err);
+            });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const product = {
+                prodName: document.getElementById('prodName').value,
+                prodIntro: document.getElementById('prodIntro').value,
+                prodStatus: document.getElementById('prodStatus').value,
+                prodPri: parseInt(document.getElementById('prodPri').value)
+            };
+
+            fetch(`http://localhost:8080/admin/products/${prodNum}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(product)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('상품 수정 실패');
+                    alert('상품이 수정되었습니다.');
+                    window.location.href = 'sales.html';
+                })
+                .catch(err => {
+                    alert('상품 수정 중 오류가 발생했습니다.');
+                    console.error(err);
+                });
+        });
+    });
+</script>
+
+</body>
+</html>

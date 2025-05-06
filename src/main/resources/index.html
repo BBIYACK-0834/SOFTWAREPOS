@@ -10,13 +10,31 @@
             background-color: #f4f4f4;
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
+        }
+
+        /* 상품 관리 버튼 */
+        #manageBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #manageBtn:hover {
+            background-color: #45a049;
         }
 
         .table-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(7, 1fr);
             gap: 20px;
             margin-top: 20px;
         }
@@ -24,7 +42,7 @@
         .table-box {
             width: 200px;
             min-height: 150px;
-            border: 2px solid #333;
+            border: 1px solid #333; /* 테두리 두께 줄임 */
             border-radius: 10px;
             text-align: center;
             padding: 10px;
@@ -51,12 +69,30 @@
             padding: 5px;
             width: 200px;
         }
+
+        #priorityContainer {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+        }
+
+        #priorityList {
+            list-style: none;
+            padding-left: 0;
+            font-size: 16px;
+        }
+
+        #priorityList li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
 
-<h1>테이블 주문 관리</h1>
-
+<!-- 상품 관리 버튼 -->
+<button id="manageBtn" onclick="location.href='sales.html'">상품 관리</button>
 <div id="addTableContainer">
     <label for="tableCountInput">새로운 테이블 개수 추가:</label>
     <input type="number" id="tableCountInput" min="1" placeholder="테이블 개수 입력">
@@ -65,11 +101,21 @@
 
 <div id="tableContainer" class="table-container"></div>
 
+<!-- 우선 서빙 표시 영역 -->
+<div id="priorityContainer">
+    <h2>음식별 우선 서빙 테이블</h2>
+    <ul id="priorityList"></ul>
+</div>
+
 <script>
+    let count = 0;
+    const allOrders = new Map();
+
     window.onload = function () {
         fetch('http://localhost:8080/admin/tablecount')
             .then(response => response.json())
-            .then(count => {
+            .then(tableCount => {
+                count = tableCount;
                 if (count > 0) {
                     createTables(count);
                 } else {
@@ -82,11 +128,11 @@
             });
     };
 
-    function createTables(count) {
+    function createTables(tableCount) {
         const container = document.getElementById('tableContainer');
         container.innerHTML = '';
 
-        for (let i = 1; i <= count; i++) {
+        for (let i = 1; i <= tableCount; i++) {
             const box = document.createElement('div');
             box.className = 'table-box';
             box.setAttribute('data-table', i);
@@ -118,12 +164,43 @@
                     item.className = 'order-item';
                     item.textContent = `${order.prodName} - ${order.quantity}개`;
                     listDiv.appendChild(item);
+
+                    if (!allOrders.has(order.prodName)) {
+                        allOrders.set(order.prodName, {
+                            table: tableNumber,
+                            orderTime: order.orderTime || Date.now()
+                        });
+                    } else {
+                        const existing = allOrders.get(order.prodName);
+                        const currentTime = order.orderTime || Date.now();
+                        if (currentTime < existing.orderTime) {
+                            allOrders.set(order.prodName, {
+                                table: tableNumber,
+                                orderTime: currentTime
+                            });
+                        }
+                    }
                 });
+
+                if (document.querySelectorAll('.order-list').length === count) {
+                    displayPriorityOrders();
+                }
             })
             .catch(error => {
                 console.error('주문 조회 실패:', error);
                 alert('주문을 불러오는 데 실패했습니다.');
             });
+    }
+
+    function displayPriorityOrders() {
+        const list = document.getElementById('priorityList');
+        list.innerHTML = '';
+
+        allOrders.forEach((info, prodName) => {
+            const li = document.createElement('li');
+            li.textContent = `${prodName} → 테이블 ${info.table}`;
+            list.appendChild(li);
+        });
     }
 
     function addTables() {

@@ -71,4 +71,17 @@ public class OrderService {
                         .build())
                 .collect(Collectors.toList());
     }
+    public List<Orderdto> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(order -> Orderdto.builder()
+                        .orderNum(order.getOrderNum())
+                        .prodName(order.getSales().getProdName()) // ✅ 상품 이름
+                        .quantity(order.getQuantity())
+                        .tableNumber(order.getTableCount())
+                        .totalPrice(order.getTotalPrice())
+                        .orderedAt(order.getOrderedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
