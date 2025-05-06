@@ -34,15 +34,18 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/user/**",
-                                "/**" // 개발을 완료 혹은 프론트 개발이 종료될 때까지는 전체 권한 주기
+                                "/**" // 개발 중엔 모든 요청 허용
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendRedirect("/login")
+                        )
+                )
                 .sessionManagement(session -> session.disable()) // 세션 비활성화
-                .formLogin(AbstractHttpConfigurer::disable) // formLogin 완전 제거
+                .formLogin(AbstractHttpConfigurer::disable) // formLogin 제거
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .cors()  // CORS 필터 추가
-                .and()
                 .build();
     }
 
@@ -68,7 +71,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // 모든 경로에 대해 CORS 허용
-                .allowedOrigins("http://localhost:63342")  // 클라이언트 주소 (CORS 허용할 도메인)
+                .allowedOrigins("http://localhost:63342","https://softwarepos.netlify.app/")  // 클라이언트 주소 (CORS 허용할 도메인)
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // 허용할 HTTP 메소드들
                 .allowedHeaders("*")  // 모든 헤더 허용
                 .allowCredentials(true);  // 쿠키를 포함한 요청 허용

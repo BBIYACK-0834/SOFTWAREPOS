@@ -8,6 +8,7 @@
             font-family: Arial, sans-serif;
             padding: 20px;
             background-color: #f8f8f8;
+            position: relative;
         }
 
         h1 {
@@ -71,9 +72,29 @@
         #addProductBtn:hover {
             background-color: #388e3c;
         }
+
+        /* 홈 버튼 스타일 */
+        #homeButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            font-size: 16px;
+            background-color: #388e3c;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        #homeButton:hover {
+            background-color: #333;
+        }
     </style>
 </head>
 <body>
+
+<a href="index.html" id="homeButton">홈으로</a>
 
 <h1>상품 목록</h1>
 
@@ -136,7 +157,6 @@
             .then(res => {
                 if (!res.ok) throw new Error('삭제 실패');
                 alert('상품이 삭제되었습니다.');
-                // 해당 행 삭제
                 const row = button.closest('tr');
                 row.remove();
             })
