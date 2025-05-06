@@ -66,13 +66,13 @@
             grid-column: 2 / 3;
             grid-row: 2 / 3;
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 한 줄에 6개 배치 */
+            grid-template-columns: repeat(4, 1fr);
             gap: 6px;
             padding: 5px;
         }
 
         .menu-section button {
-            aspect-ratio: 1 / 1; /* 정사각형 */
+            aspect-ratio: 1 / 1;
             width: 100%;
             background-color: #eee;
             border: 1px solid #000;
@@ -115,194 +115,11 @@
 
     <div class="function-buttons">
         <button id="clear-button">정리</button>
-        <button id="cancel-button">취소</button>
         <button id="order-button">주문</button>
+        <button id="cancel-button">취소</button>
     </div>
 </div>
 
-<script>
-    const tableNumber = new URLSearchParams(window.location.search).get('table');
-    const orderItemsContainer = document.getElementById('order-items');
-    const totalPriceElement = document.getElementById('total-price');
-    const menuSection = document.getElementById('menu-section');
-    const sessionOrders = [];
-    let activeOrders = [];
-    let menuList = []; // 메뉴 정보를 저장하는 변수
-
-    function calculateElapsedTime(orderTime) {
-        const now = new Date();
-        const elapsed = Math.floor((now - new Date(orderTime)) / 1000);
-        const m = Math.floor(elapsed / 60);
-        const s = elapsed % 60;
-        return `${m}분 ${s}초`;
-    }
-
-    function fetchOrders() {
-        fetch(`http://localhost:8080/user/order/${tableNumber}`)
-            .then(res => res.json())
-            .then(data => {
-                renderOrders([...data, ...sessionOrders]);
-            });
-    }
-
-    function renderOrders(orderList) {
-        orderItemsContainer.innerHTML = '';
-        activeOrders = orderList.map(order => ({ ...order }));
-        let total = 0;
-
-        activeOrders.forEach((order, index) => {
-            // 메뉴 리스트에서 단가 찾기
-            const menuItem = menuList.find(m => m.prodName === order.prodName);
-            const price = menuItem ? menuItem.prodPri : 0;
-            const orderTotalPrice = price * order.quantity;
-            total += orderTotalPrice;
-
-            const item = document.createElement('div');
-            item.className = 'order-item';
-
-            const quantityControls = `
-                <div class="quantity-controls">
-                    <button onclick="updateQuantity(${index}, -1)">-</button>
-                    ${order.quantity}개
-                    <button onclick="updateQuantity(${index}, 1)">+</button>
-                </div>
-            `;
-
-            item.innerHTML = `
-                <div>${order.prodName}</div>
-                ${quantityControls}
-                <div>${orderTotalPrice.toLocaleString()}원</div>
-                <div>주문 후 ${calculateElapsedTime(order.orderedAt || new Date())}</div>
-            `;
-
-            orderItemsContainer.appendChild(item);
-
-            // 주문 객체에 가격 추가 (다음 요청을 위해 저장)
-            order.price = price;
-        });
-
-        totalPriceElement.textContent = `총액: ${total.toLocaleString()}원`;
-    }
-
-    function updateQuantity(index, delta) {
-        const order = activeOrders[index];
-        const newQuantity = order.quantity + delta;
-
-        if (newQuantity <= 0) {
-            if (order.orderNum) {
-                fetch(`http://localhost:8080/admin/${order.orderNum}`, {
-                    method: 'DELETE'
-                }).then(() => {
-                    fetchOrders();
-                });
-            } else {
-                const sessionIndex = sessionOrders.findIndex(o => o.prodName === order.prodName);
-                if (sessionIndex !== -1) {
-                    sessionOrders.splice(sessionIndex, 1);
-                }
-                fetchOrders();
-            }
-            return;
-        }
-
-        order.quantity = newQuantity;
-
-        if (order.orderNum) {
-            fetch(`http://localhost:8080/admin/${order.orderNum}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prodName: order.prodName,
-                    quantity: order.quantity,
-                    price: order.price,
-                    tableNumber: parseInt(tableNumber)
-                })
-            }).then(() => {
-                renderOrders(activeOrders);
-            });
-        } else {
-            const sessionOrder = sessionOrders.find(o => o.prodName === order.prodName);
-            if (sessionOrder) {
-                sessionOrder.quantity = order.quantity;
-            }
-            renderOrders(activeOrders);
-        }
-    }
-
-    function fetchMenu() {
-        fetch('http://localhost:8080/admin/products')
-            .then(res => res.json())
-            .then(products => {
-                menuList = products; // 단가 계산을 위해 전역 저장
-                products.forEach(p => {
-                    const btn = document.createElement('button');
-                    btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
-                    btn.onclick = () => {
-                        const existing = sessionOrders.find(o => o.prodName === p.prodName);
-                        if (existing) {
-                            existing.quantity += 1;
-                        } else {
-                            sessionOrders.push({
-                                prodName: p.prodName,
-                                quantity: 1,
-                                orderedAt: new Date()
-                            });
-                        }
-                        fetchOrders();
-                    };
-                    menuSection.appendChild(btn);
-                });
-            });
-    }
-
-    document.getElementById('clear-button').onclick = () => {
-        fetch(`http://localhost:8080/user/order/${tableNumber}`)
-            .then(res => res.json())
-            .then(orders => {
-                const deletes = orders.map(o =>
-                    fetch(`http://localhost:8080/admin/${o.orderNum}`, { method: 'DELETE' })
-                );
-                return Promise.all(deletes);
-            })
-            .then(() => {
-                sessionOrders.length = 0;
-                fetchOrders();
-                window.location.href = 'index.html';
-            });
-    };
-
-    document.getElementById('cancel-button').onclick = () => {
-        window.location.href = 'index.html';
-    };
-
-    document.getElementById('order-button').onclick = () => {
-        const postRequests = sessionOrders.map(order => {
-            const menuItem = menuList.find(m => m.prodName === order.prodName);
-            const price = menuItem ? menuItem.prodPri : 0;
-
-            return fetch('http://localhost:8080/user/order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prodName: order.prodName,
-                    quantity: order.quantity,
-                    price: price,
-                    tableNumber: parseInt(tableNumber)
-                })
-            });
-        });
-
-        Promise.all(postRequests)
-            .then(() => {
-                sessionOrders.length = 0;
-                window.location.href = 'index.html';
-            });
-    };
-
-    window.onload = () => {
-        fetchMenu();
-        fetchOrders();
-    };
-</script>
+<script src="order.js"></script>
 </body>
 </html>
