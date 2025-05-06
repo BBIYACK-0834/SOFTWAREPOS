@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,14 +19,16 @@ public class OrderService {
     private final SalesRepository salesRepository;
 
     public Long createOrder(Orderdto dto) {
-        SalesEntity sales = salesRepository.findById(dto.getSales().getProdNum())
+        SalesEntity sales = salesRepository.findByProdName(dto.getProdName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
 
+        Long totalPrice = sales.getProdPri() * dto.getQuantity();
+
         OrderEntity order = OrderEntity.builder()
-                .sales(sales) // JPA가 관리하는 엔티티를 넣어야 함
+                .sales(sales)
                 .quantity(dto.getQuantity())
-                .totalPrice(dto.getTotalPrice())
-                .tableCount(dto.getTableCount())
+                .tableCount(dto.getTableNumber())
+                .totalPrice(totalPrice)
                 .build();
 
         return orderRepository.save(order).getOrderNum();
@@ -35,24 +38,50 @@ public class OrderService {
         OrderEntity order = orderRepository.findById(orderNum)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
 
-        SalesEntity sales = salesRepository.findById(dto.getSales().getProdNum())
+        SalesEntity sales = salesRepository.findByProdName(dto.getProdName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품을 찾을 수 없습니다."));
+
+        Long totalPrice = sales.getProdPri() * dto.getQuantity();
 
         order.setSales(sales);
         order.setQuantity(dto.getQuantity());
-        order.setTotalPrice(dto.getTotalPrice());
+        order.setTableCount(dto.getTableNumber());
+        order.setTotalPrice(totalPrice);
 
         orderRepository.save(order);
     }
 
     public void deleteOrder(Long orderNum) {
-        if (!orderRepository.existsById(orderNum)) {
-            throw new IllegalArgumentException("해당 주문을 찾을 수 없습니다.");
-        }
-        orderRepository.deleteById(orderNum);
+        OrderEntity order = orderRepository.findById(orderNum)
+                .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
+
+        orderRepository.delete(order);
     }
-    public List<OrderEntity> getOrdersByTableCount(Long TableCount) {
-        return orderRepository.findAllByTableCount(TableCount);
+
+
+    public List<Orderdto> getOrdersByTableCount(Long tableCount) {
+        return orderRepository.findAllByTableCount(tableCount).stream()
+                .map(order -> Orderdto.builder()
+                        .orderNum(order.getOrderNum())
+                        .prodName(order.getSales().getProdName())
+                        .quantity(order.getQuantity())
+                        .totalPrice(order.getTotalPrice())
+                        .orderedAt(order.getOrderedAt())
+                        .tableNumber(order.getTableCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
+    public List<Orderdto> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(order -> Orderdto.builder()
+                        .orderNum(order.getOrderNum())
+                        .prodName(order.getSales().getProdName()) // ✅ 상품 이름
+                        .quantity(order.getQuantity())
+                        .tableNumber(order.getTableCount())
+                        .totalPrice(order.getTotalPrice())
+                        .orderedAt(order.getOrderedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>POS Order Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 10px;
+            width: 90%;
+            height: 90%;
+        }
+
+        .order-summary {
+            grid-column: 1 / 2;
+            grid-row: 1 / 4;
+            border: 2px solid #000;
+            padding: 10px;
+            background-color: #ffffff;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-summary h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ccc;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .total-price {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .menu-section {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .menu-section button {
+            padding: 20px;
+            background-color: #eee;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+
+        .function-buttons {
+            grid-column: 2 / 3;
+            grid-row: 3 / 4;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .function-buttons button {
+            padding: 20px;
+            background-color: #ddd;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="order-summary">
+        <h2>주문 내역</h2>
+        <div id="order-items"></div>
+        <div class="total-price" id="total-price">총액: 0원</div>
+    </div>
+
+    <div class="menu-section" id="menu-section"></div>
+
+    <div class="function-buttons">
+        <button id="clear-button">정리</button>
+        <button id="cancel-button">취소</button>
+        <button id="order-button">주문</button>
+    </div>
+</div>
+
+<script>
+    const tableNumber = new URLSearchParams(window.location.search).get('table');
+    const orderItemsContainer = document.getElementById('order-items');
+    const totalPriceElement = document.getElementById('total-price');
+    const menuSection = document.getElementById('menu-section');
+    const sessionOrders = []; // 세션 내 추가된 주문
+
+    function calculateElapsedTime(orderTime) {
+        const now = new Date();
+        const elapsed = Math.floor((now - new Date(orderTime)) / 1000);
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        return `${m}분 ${s}초`;
+    }
+
+    function fetchOrders() {
+        fetch(`http://localhost:8080/user/order/${tableNumber}`)
+            .then(res => res.json())
+            .then(data => {
+                renderOrders([...data, ...sessionOrders]);
+            });
+    }
+
+    function renderOrders(orderList) {
+        orderItemsContainer.innerHTML = '';
+        let total = 0;
+
+        orderList.forEach(order => {
+            const item = document.createElement('div');
+            item.className = 'order-item';
+
+            item.innerHTML = `
+                <div>${order.prodName}</div>
+                <div>${order.quantity}개</div>
+                <div>${order.totalPrice.toLocaleString()}원</div>
+                <div>주문 후 ${calculateElapsedTime(order.orderedAt || new Date())}</div>
+            `;
+
+            total += order.totalPrice;
+            orderItemsContainer.appendChild(item);
+        });
+
+        totalPriceElement.textContent = `총액: ${total.toLocaleString()}원`;
+    }
+
+    function fetchMenu() {
+        fetch('http://localhost:8080/admin/products')
+            .then(res => res.json())
+            .then(products => {
+                products.forEach(p => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
+                    btn.onclick = () => {
+                        const existing = sessionOrders.find(o => o.prodName === p.prodName);
+                        if (existing) {
+                            existing.quantity += 1;
+                            existing.totalPrice += p.prodPri;
+                        } else {
+                            sessionOrders.push({
+                                prodName: p.prodName,
+                                quantity: 1,
+                                price: p.prodPri,
+                                totalPrice: p.prodPri,
+                                orderedAt: new Date()
+                            });
+                        }
+                        fetchOrders();
+                    };
+                    menuSection.appendChild(btn);
+                });
+            });
+    }
+
+    document.getElementById('clear-button').onclick = () => {
+        fetch(`http://localhost:8080/user/order/${tableNumber}`)
+            .then(res => res.json())
+            .then(orders => {
+                const deletes = orders.map(o =>
+                    fetch(`http://localhost:8080/admin/${o.orderNum}`, { method: 'DELETE' })
+                );
+                return Promise.all(deletes);
+            })
+            .then(() => {
+                sessionOrders.length = 0;
+                fetchOrders();
+                window.location.href = 'index.html';
+            });
+    };
+
+    document.getElementById('cancel-button').onclick = () => {
+        window.location.href = 'index.html';
+    };
+
+    document.getElementById('order-button').onclick = () => {
+        const postRequests = sessionOrders.map(order =>
+            fetch('http://localhost:8080/user/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prodName: order.prodName,
+                    quantity: order.quantity,
+                    price: order.price,
+                    tableNumber: parseInt(tableNumber)
+                })
+            })
+        );
+
+        Promise.all(postRequests)
+            .then(() => {
+                alert('주문 완료되었습니다.');
+                sessionOrders.length = 0;
+                window.location.href = 'index.html';
+            });
+    };
+
+    window.onload = () => {
+        fetchMenu();
+        fetchOrders();
+        setInterval(fetchOrders, 10000);
+    };
+</script>
+</body>
+</html>

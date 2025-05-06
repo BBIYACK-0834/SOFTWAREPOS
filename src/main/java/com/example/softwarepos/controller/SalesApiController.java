@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/products")
@@ -41,6 +43,23 @@ public class SalesApiController {
         try {
             salesService.deleteProduct(prodNum);
             return ResponseEntity.ok("상품 삭제 성공");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ✅ 전체 상품 조회
+    @GetMapping
+    public ResponseEntity<List<Salesdto>> getAllProducts() {
+        return ResponseEntity.ok(salesService.getAllProducts());
+    }
+
+    // ✅ 개별 상품 조회
+    @GetMapping("/{prodNum}")
+    public ResponseEntity<?> getProduct(@PathVariable Long prodNum) {
+        try {
+            Salesdto dto = salesService.getProductByNum(prodNum);
+            return ResponseEntity.ok(dto);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

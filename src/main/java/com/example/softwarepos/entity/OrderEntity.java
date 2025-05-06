@@ -20,12 +20,17 @@ public class OrderEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_num", referencedColumnName = "prod_num")
-    private SalesEntity sales; // 이걸로 prodName 포함 모든 상품정보 접근 가능
+    private SalesEntity sales;  // ✅ 상품 전체 정보 접근 가능 (prodName, prodIntro 등 포함)
 
+    @Column(nullable = false)
     private Long quantity;
+
     @Column(name = "table_count", nullable = false)
     private Long tableCount;
-    private Long totalPrice; // 혹은 금액을 계산해서 넣는 방식
+
+    @Column(nullable = false)
+    private Long totalPrice;
+
     @Column(name = "ordered_at", nullable = false, updatable = false)
     private LocalDateTime orderedAt;
 

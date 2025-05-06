@@ -1,6 +1,5 @@
 package com.example.softwarepos.dto;
 
-import com.example.softwarepos.entity.SalesEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,11 +11,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Orderdto {
     private Long orderNum;
-    private SalesEntity sales;
+
+    // 이 두 필드가 중요
+    private String prodName;
+    private Long price;
+
     private Long quantity;
-    private Long TableCount;
+    private Long tableNumber;
     private Long totalPrice;
-
-    private LocalDateTime orderedAt; // 주문 시간 추가
+    private LocalDateTime orderedAt;
 }
-
