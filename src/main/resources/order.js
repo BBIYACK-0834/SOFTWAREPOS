@@ -15,7 +15,7 @@ function calculateElapsedTime(orderTime) {
 }
 
 function fetchOrders() {
-    fetch(`http://localhost:8080/user/order/${tableNumber}`, {
+    fetch(`http://softwarepos.kro.kr:8080/user/order/${tableNumber}`, {
         credentials: 'include'
     })
         .then(res => res.json())
@@ -66,7 +66,7 @@ function updateQuantity(index, delta) {
 
     if (newQuantity <= 0) {
         if (order.orderNum) {
-            fetch(`http://localhost:8080/admin/${order.orderNum}`, {
+            fetch(`http://softwarepos.kro.kr:8080/admin/${order.orderNum}`, {
                 method: 'DELETE',
                 credentials: 'include'
             }).then(fetchOrders);
@@ -83,7 +83,7 @@ function updateQuantity(index, delta) {
     order.quantity = newQuantity;
 
     if (order.orderNum) {
-        fetch(`http://localhost:8080/admin/${order.orderNum}`, {
+        fetch(`http://softwarepos.kro.kr:8080/admin/${order.orderNum}`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -104,7 +104,7 @@ function updateQuantity(index, delta) {
 }
 
 function fetchMenu() {
-    fetch('http://localhost:8080/admin/products', {
+    fetch('http://softwarepos.kro.kr:8080/admin/products', {
         credentials: 'include'
     })
         .then(res => res.json())
@@ -132,13 +132,13 @@ function fetchMenu() {
 }
 
 document.getElementById('clear-button').onclick = () => {
-    fetch(`http://localhost:8080/user/order/${tableNumber}`, {
+    fetch(`http://softwarepos.kro.kr:8080/user/order/${tableNumber}`, {
         credentials: 'include'
     })
         .then(res => res.json())
         .then(orders => {
             const deletes = orders.map(o =>
-                fetch(`http://localhost:8080/admin/${o.orderNum}`, {
+                fetch(`http://softwarepos.kro.kr:8080/admin/${o.orderNum}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 })
@@ -161,7 +161,7 @@ document.getElementById('order-button').onclick = () => {
         const menuItem = menuList.find(m => m.prodName === order.prodName);
         const price = menuItem ? menuItem.prodPri : 0;
 
-        return fetch('http://localhost:8080/user/order', {
+        return fetch('http://softwarepos.kro.kr:8080/user/order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
