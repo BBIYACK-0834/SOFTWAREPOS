@@ -15,7 +15,7 @@ function calculateElapsedTime(orderTime) {
 }
 
 function fetchOrders() {
-    fetch('https://softwarepos.r-e.kr/user/order/${tableNumber}', {
+    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, {
         credentials: 'include'
     })
         .then(res => res.json())
@@ -66,7 +66,7 @@ function updateQuantity(index, delta) {
 
     if (newQuantity <= 0) {
         if (order.orderNum) {
-            fetch('https://softwarepos.r-e.kr/admin/${order.orderNum}', {
+            fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
                 method: 'DELETE',
                 credentials: 'include'
             }).then(fetchOrders);
@@ -83,7 +83,7 @@ function updateQuantity(index, delta) {
     order.quantity = newQuantity;
 
     if (order.orderNum) {
-        fetch('https://softwarepos.r-e.kr/admin/${order.orderNum}', {
+        fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -132,13 +132,13 @@ function fetchMenu() {
 }
 
 document.getElementById('clear-button').onclick = () => {
-    fetch('https://softwarepos.r-e.kr/user/order/${tableNumber}', {
+    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, {
         credentials: 'include'
     })
         .then(res => res.json())
         .then(orders => {
             const deletes = orders.map(o =>
-                fetch('https://softwarepos.r-e.kr/admin/${o.orderNum}', {
+                fetch(`https://softwarepos.r-e.kr/admin/${o.orderNum}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 })
