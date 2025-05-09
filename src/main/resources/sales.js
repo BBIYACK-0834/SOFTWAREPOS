@@ -2,7 +2,7 @@ const API_BASE = "https://softwarepos.r-e.kr";
 
 function handle401(response) {
     if (response.status === 401) {
-        window.location.href = "login.html";
+        window.location.href = "login";
         return true;
     }
     return false;
@@ -42,7 +42,7 @@ window.onload = () => {
 };
 
 function editProduct(prodNum) {
-    window.location.href = `editProduct.html?prodNum=${prodNum}`;
+    window.location.href = `editProduct?prodNum=${prodNum}`;
 }
 
 function deleteProduct(prodNum, button) {

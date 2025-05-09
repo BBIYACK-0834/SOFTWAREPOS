@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
         .then(res => {
             if (res.status === 401) {
-                window.location.href = "login.html";
+                window.location.href = "login";
                 return;
             }
             return res.json();
@@ -63,12 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then(res => {
                 if (res.status === 401) {
-                    window.location.href = "login.html";
+                    window.location.href = "login";
                     return;
                 }
                 if (!res.ok) throw new Error("수정 실패");
                 alert('✅ 상품이 수정되었습니다.');
-                window.location.href = 'sales.html';
+                window.location.href = 'sales';
             })
             .catch(err => {
                 errorBox.textContent = '❌ 상품 수정 중 오류가 발생했습니다.';

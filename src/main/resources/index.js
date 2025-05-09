@@ -7,7 +7,7 @@ window.onload = () => {
     fetch(`${API_BASE}/admin/tablecount`, { credentials: 'include' })
         .then(response => {
             if (response.status === 401) {
-                window.location.href = "login.html";
+                window.location.href = "login";
                 return;
             }
             return response.json();
@@ -37,7 +37,7 @@ function createTables(tableCount) {
         box.setAttribute('data-table', i);
         box.innerHTML = `<h3>테이블 ${i}</h3><div class="order-list" id="order-list-${i}">조회 중...</div>`;
         box.addEventListener('click', () => {
-            window.location.href = `order.html?table=${i}`;
+            window.location.href = `order?table=${i}`;
         });
         container.appendChild(box);
         fetchOrders(i);
@@ -48,7 +48,7 @@ function fetchOrders(tableNumber) {
     fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
         .then(response => {
             if (response.status === 401) {
-                window.location.href = "login.html";
+                window.location.href = "login";
                 return;
             }
             return response.json();
@@ -153,7 +153,7 @@ function serveOrder(orderNum) {
         })
             .then(res => {
                 if (res.status === 401) {
-                    window.location.href = "login.html";
+                    window.location.href = "login";
                     return;
                 }
                 return res.text();
@@ -175,7 +175,7 @@ function serveOrder(orderNum) {
         })
             .then(res => {
                 if (res.status === 401) {
-                    window.location.href = "login.html";
+                    window.location.href = "login";
                     return;
                 }
                 return res.text();
@@ -214,7 +214,7 @@ function addTables() {
         })
         .then(res => {
             if (res.status === 401) {
-                window.location.href = "login.html";
+                window.location.href = "login";
                 return;
             }
             if (!res.ok) throw new Error('테이블 수 저장 실패');

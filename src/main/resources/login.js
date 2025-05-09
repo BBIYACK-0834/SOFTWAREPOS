@@ -12,7 +12,7 @@ function login() {
     })
         .then(res => {
             if (res.ok) {
-                window.location.href = "index.html";
+                window.location.href = "index";
             } else {
                 throw new Error("로그인 실패");
             }

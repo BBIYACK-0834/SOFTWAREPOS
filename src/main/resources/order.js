@@ -148,12 +148,12 @@ document.getElementById('clear-button').onclick = () => {
         .then(() => {
             sessionOrders.length = 0;
             fetchOrders();
-            window.location.href = 'index.html';
+            window.location.href = 'index';
         });
 };
 
 document.getElementById('cancel-button').onclick = () => {
-    window.location.href = 'index.html';
+    window.location.href = 'index';
 };
 
 document.getElementById('order-button').onclick = () => {
@@ -177,7 +177,7 @@ document.getElementById('order-button').onclick = () => {
     Promise.all(postRequests)
         .then(() => {
             sessionOrders.length = 0;
-            window.location.href = 'index.html';
+            window.location.href = 'index';
         });
 };
 
