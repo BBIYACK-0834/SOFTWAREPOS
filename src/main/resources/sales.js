@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080";
+const API_BASE = "http://softwarepos.kro.kr:8080";
 
 function handle401(response) {
     if (response.status === 401) {

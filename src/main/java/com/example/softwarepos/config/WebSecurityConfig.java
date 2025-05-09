@@ -32,7 +32,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .cors(cors -> {}) // ✅ 새 방식
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login", "/user/signup").permitAll()
+                        .requestMatchers("/user/login", "/user/signup","/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -60,7 +60,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:63342", "https://softwarepos.netlify.app")
+                .allowedOrigins("http://localhost:63342", "https://softwarepos.netlify.app","/**")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
                 .allowCredentials(true);

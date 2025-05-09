@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080';
+const API_BASE = 'http://softwarepos.kro.kr:8080';
 const menuEl = document.getElementById('menu');
 const orderListEl = document.getElementById('order-list');
 const totalEl = document.getElementById('total');
