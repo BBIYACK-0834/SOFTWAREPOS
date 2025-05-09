@@ -1,4 +1,4 @@
-const API_BASE = 'https://softwarepos.r-e.kr:8080';
+const API_BASE = 'https://softwarepos.r-e.kr';
 
 function handle401(res) {
     if (res.status === 401) {

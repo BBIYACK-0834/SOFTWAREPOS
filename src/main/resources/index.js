@@ -1,4 +1,4 @@
-const API_BASE = "https://softwarepos.r-e.kr:8080";
+const API_BASE = "https://softwarepos.r-e.kr";
 let count = 0;
 const serveInfoMap = new Map(); // 음식별 가장 오래된 주문 1건
 const countMap = new Map();     // 음식별 총 수량

@@ -1,4 +1,4 @@
-const API_BASE = 'https://softwarepos.r-e.kr:8080';
+const API_BASE = 'https://softwarepos.r-e.kr';
 const menuEl = document.getElementById('menu');
 const orderListEl = document.getElementById('order-list');
 const totalEl = document.getElementById('total');

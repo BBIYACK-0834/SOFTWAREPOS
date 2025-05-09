@@ -2,7 +2,7 @@ function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    fetch("https://softwarepos.r-e.kr:8080/user/login", {
+    fetch("https://softwarepos.r-e.kr/user/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
