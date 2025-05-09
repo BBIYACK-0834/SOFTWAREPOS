@@ -1,4 +1,5 @@
 const API_BASE = 'https://softwarepos.r-e.kr';
+
 const menuEl = document.getElementById('menu');
 const orderListEl = document.getElementById('order-list');
 const totalEl = document.getElementById('total');
@@ -16,19 +17,21 @@ if (!tableNumber) {
 }
 
 function handle401(response) {
-    if (res.status === 401 || res.status === 403) {
+    if (response.status === 401 || response.status === 403) {
         window.location.href = "login";
         return true;
     }
     return false;
 }
 
+// 메뉴 불러오기
 fetch(`${API_BASE}/user/products`, { credentials: 'include' })
-    .then(res => {
-        if (handle401(res)) return;
-        return res.json();
+    .then(response => {
+        if (handle401(response)) return;
+        return response.json();
     })
     .then(products => {
+        if (!products) return;
         products.forEach(p => {
             const btn = document.createElement('button');
             btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
@@ -45,6 +48,10 @@ fetch(`${API_BASE}/user/products`, { credentials: 'include' })
             });
             menuEl.appendChild(btn);
         });
+    })
+    .catch(err => {
+        console.error('메뉴 로드 실패:', err);
+        alert('메뉴를 불러오는 데 실패했습니다.');
     });
 
 function updateOrder() {
@@ -74,6 +81,7 @@ function updateOrder() {
 
     totalEl.textContent = `총액: ${total.toLocaleString()}원`;
 }
+
 function changeQuantity(name, delta) {
     if (!order[name]) return;
 
@@ -85,7 +93,6 @@ function changeQuantity(name, delta) {
 
     updateOrder();
 }
-
 
 function clearOrder() {
     Object.keys(order).forEach(k => delete order[k]);
@@ -120,9 +127,9 @@ function submitOrder() {
 
 function showCurrentOrders() {
     fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
-        .then(res => {
-            if (handle401(res)) return;
-            return res.json();
+        .then(response => {
+            if (handle401(response)) return;
+            return response.json();
         })
         .then(data => {
             modalOrderList.innerHTML = '';
@@ -144,9 +151,9 @@ function showCurrentOrders() {
             }
 
             fetch(`${API_BASE}/user/order/all`, { credentials: 'include' })
-                .then(res => {
-                    if (handle401(res)) return;
-                    return res.json();
+                .then(response => {
+                    if (handle401(response)) return;
+                    return response.json();
                 })
                 .then(allOrders => {
                     const grouped = {};
