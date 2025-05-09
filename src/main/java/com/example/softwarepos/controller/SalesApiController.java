@@ -10,13 +10,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/products")
+@RequestMapping()
 public class SalesApiController {
 
     private final SalesService salesService;
 
     // ✅ 상품 등록
-    @PostMapping
+    @PostMapping("/admin/products")
     public ResponseEntity<?> create(@RequestBody Salesdto dto) {
         try {
             salesService.addProduct(dto);
@@ -27,7 +27,7 @@ public class SalesApiController {
     }
 
     // ✅ 상품 수정
-    @PutMapping("/{prodNum}")
+    @PutMapping("/admin/products/{prodNum}")
     public ResponseEntity<?> update(@PathVariable Long prodNum, @RequestBody Salesdto dto) {
         try {
             salesService.updateProduct(prodNum, dto);
@@ -38,7 +38,7 @@ public class SalesApiController {
     }
 
     // ✅ 상품 삭제
-    @DeleteMapping("/{prodNum}")
+    @DeleteMapping("/admin/products/{prodNum}")
     public ResponseEntity<?> delete(@PathVariable Long prodNum) {
         try {
             salesService.deleteProduct(prodNum);
@@ -49,13 +49,13 @@ public class SalesApiController {
     }
 
     // ✅ 전체 상품 조회
-    @GetMapping
+    @GetMapping("/user/products")
     public ResponseEntity<List<Salesdto>> getAllProducts() {
         return ResponseEntity.ok(salesService.getAllProducts());
     }
 
     // ✅ 개별 상품 조회
-    @GetMapping("/{prodNum}")
+    @GetMapping("/user/products/{prodNum}")
     public ResponseEntity<?> getProduct(@PathVariable Long prodNum) {
         try {
             Salesdto dto = salesService.getProductByNum(prodNum);

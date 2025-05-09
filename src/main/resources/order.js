@@ -104,7 +104,7 @@ function updateQuantity(index, delta) {
 }
 
 function fetchMenu() {
-    fetch('https://softwarepos.r-e.kr/admin/products', {
+    fetch('https://softwarepos.r-e.kr/user/products', {
         credentials: 'include'
     })
         .then(res => res.json())

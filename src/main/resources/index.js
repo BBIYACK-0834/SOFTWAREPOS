@@ -6,7 +6,7 @@ const countMap = new Map();     // 음식별 총 수량
 window.onload = () => {
     fetch(`${API_BASE}/admin/tablecount`, { credentials: 'include' })
         .then(response => {
-            if (response.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = "login";
                 return;
             }
@@ -47,7 +47,7 @@ function createTables(tableCount) {
 function fetchOrders(tableNumber) {
     fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
         .then(response => {
-            if (response.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = "login";
                 return;
             }
@@ -152,7 +152,7 @@ function serveOrder(orderNum) {
             })
         })
             .then(res => {
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     window.location.href = "login";
                     return;
                 }
@@ -174,7 +174,7 @@ function serveOrder(orderNum) {
             credentials: 'include'
         })
             .then(res => {
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     window.location.href = "login";
                     return;
                 }
@@ -213,7 +213,7 @@ function addTables() {
             });
         })
         .then(res => {
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = "login";
                 return;
             }

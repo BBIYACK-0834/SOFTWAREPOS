@@ -16,14 +16,14 @@ if (!tableNumber) {
 }
 
 function handle401(response) {
-    if (response.status === 401) {
+    if (res.status === 401 || res.status === 403) {
         window.location.href = "login";
         return true;
     }
     return false;
 }
 
-fetch(`${API_BASE}/admin/products`, { credentials: 'include' })
+fetch(`${API_BASE}/user/products`, { credentials: 'include' })
     .then(res => {
         if (handle401(res)) return;
         return res.json();

@@ -1,7 +1,7 @@
 const API_BASE = "https://softwarepos.r-e.kr";
 
 function handle401(response) {
-    if (response.status === 401) {
+    if (res.status === 401 || res.status === 403) {
         window.location.href = "login";
         return true;
     }
@@ -9,7 +9,7 @@ function handle401(response) {
 }
 
 window.onload = () => {
-    fetch(`${API_BASE}/admin/products`, {
+    fetch(`${API_BASE}/user/products`, {
         credentials: 'include'
     })
         .then(res => {

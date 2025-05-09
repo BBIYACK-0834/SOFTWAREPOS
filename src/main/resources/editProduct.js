@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 기존 상품 정보 불러오기
-    fetch(`${API_BASE}/admin/products/${prodNum}`, {
+    fetch(`${API_BASE}/user/products/${prodNum}`, {
         credentials: "include"
     })
         .then(res => {
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 window.location.href = "login";
                 return;
             }
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(product)
         })
             .then(res => {
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     window.location.href = "login";
                     return;
                 }

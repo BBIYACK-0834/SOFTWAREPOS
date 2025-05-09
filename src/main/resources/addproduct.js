@@ -1,71 +1,78 @@
-const API_BASE = 'https://softwarepos.r-e.kr';
-
-function handle401(res) {
-    if (res.status === 401) {
-        window.location.href = 'sales';
-        return true;
-    }
-    return false;
-}
+const API_BASE = "https://softwarepos.r-e.kr";
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('productForm');
     const urlParams = new URLSearchParams(window.location.search);
     const prodNum = urlParams.get('prodNum');
+    const errorBox = document.getElementById("error-message");
 
-    if (prodNum) {
-        // 수정 모드
-        fetch(`${API_BASE}/admin/products/${prodNum}`, {
-            credentials: 'include'
-        })
-            .then(res => {
-                if (handle401(res)) return;
-                return res.json();
-            })
-            .then(data => {
-                if (!data) return;
-                document.getElementById('prodName').value = data.prodName;
-                document.getElementById('prodIntro').value = data.prodIntro;
-                document.getElementById('prodStatus').value = data.prodStatus;
-                document.getElementById('prodPri').value = data.prodPri;
-            })
-            .catch(err => {
-                alert('상품 정보를 불러오지 못했습니다.');
-                console.error(err);
-            });
+    if (!prodNum) {
+        errorBox.textContent = '❌ 상품 번호가 없습니다.';
+        return;
     }
+
+    // ✅ 기존 상품 정보 불러오기 (GET만 user 경로로 변경)
+    fetch(`${API_BASE}/user/products/${prodNum}`, {
+        credentials: "include"
+    })
+        .then(res => {
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = "login";
+                return;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data) return;
+            document.getElementById('prodName').value = data.prodName;
+            document.getElementById('prodIntro').value = data.prodIntro;
+            document.getElementById('prodStatus').value = data.prodStatus;
+            document.getElementById('prodPri').value = data.prodPri;
+        })
+        .catch(err => {
+            errorBox.textContent = '❌ 상품 정보를 불러오지 못했습니다.';
+            console.error(err);
+        });
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
+        errorBox.textContent = ''; // 초기화
+
+        const name = document.getElementById('prodName').value.trim();
+        const price = parseInt(document.getElementById('prodPri').value);
+
+        if (!name || isNaN(price) || price < 0) {
+            errorBox.textContent = '❗ 유효한 상품명과 0 이상의 가격을 입력하세요.';
+            return;
+        }
 
         const product = {
-            prodName: document.getElementById('prodName').value,
+            prodName: name,
             prodIntro: document.getElementById('prodIntro').value,
             prodStatus: document.getElementById('prodStatus').value,
-            prodPri: parseInt(document.getElementById('prodPri').value)
+            prodPri: price
         };
 
-        const method = prodNum ? 'PUT' : 'POST';
-        const endpoint = prodNum
-            ? `${API_BASE}/admin/products/${prodNum}`
-            : `${API_BASE}/admin/products`;
-
-        fetch(endpoint, {
-            method: method,
+        // ✅ PUT은 여전히 admin 경로 유지
+        fetch(`${API_BASE}/admin/products/${prodNum}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include',
+            credentials: "include",
             body: JSON.stringify(product)
         })
             .then(res => {
-                if (handle401(res)) return;
-                if (!res.ok) throw new Error('상품 저장 실패');
-                alert('상품이 저장되었습니다.');
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = "login";
+                    return;
+                }
+                if (!res.ok) throw new Error("수정 실패");
+                alert('✅ 상품이 수정되었습니다.');
                 window.location.href = 'sales';
             })
             .catch(err => {
-                alert('상품 저장 중 오류가 발생했습니다.');
+                errorBox.textContent = '❌ 상품 수정 중 오류가 발생했습니다.';
                 console.error(err);
             });
     });
