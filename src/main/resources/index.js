@@ -6,7 +6,7 @@ const countMap = new Map();     // 음식별 총 수량
 window.onload = () => {
     fetch(`${API_BASE}/admin/tablecount`, { credentials: 'include' })
         .then(response => {
-            if (res.status === 401 || res.status === 403) {
+            if (response.status === 401 || response.status === 403) {
                 window.location.href = "login";
                 return;
             }
@@ -47,7 +47,7 @@ function createTables(tableCount) {
 function fetchOrders(tableNumber) {
     fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
         .then(response => {
-            if (res.status === 401 || res.status === 403) {
+            if (response.status === 401 || response.status === 403) {
                 window.location.href = "login";
                 return;
             }
@@ -151,12 +151,12 @@ function serveOrder(orderNum) {
                 tableNumber: info.table
             })
         })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
+            .then(response => {
+                if (response.status === 401 || response.status === 403) {
                     window.location.href = "login";
                     return;
                 }
-                return res.text();
+                return response.text();
             })
             .then(() => {
                 serveInfoMap.clear();
@@ -173,12 +173,12 @@ function serveOrder(orderNum) {
             method: 'DELETE',
             credentials: 'include'
         })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
+            .then(response => {
+                if (response.status === 401 || response.status === 403) {
                     window.location.href = "login";
                     return;
                 }
-                return res.text();
+                return response.text();
             })
             .then(() => {
                 serveInfoMap.clear();
@@ -202,7 +202,7 @@ function addTables() {
     }
 
     fetch(`${API_BASE}/admin/tablecount`, { credentials: 'include' })
-        .then(res => res.json())
+        .then(response => response.json())
         .then(currentCount => {
             const method = currentCount > 0 ? 'PUT' : 'POST';
             return fetch(`${API_BASE}/admin/tablecount`, {
@@ -212,12 +212,12 @@ function addTables() {
                 body: JSON.stringify({ count: newCount })
             });
         })
-        .then(res => {
-            if (res.status === 401 || res.status === 403) {
+        .then(response => {
+            if (response.status === 401 || response.status === 403) {
                 window.location.href = "login";
                 return;
             }
-            if (!res.ok) throw new Error('테이블 수 저장 실패');
+            if (!response.ok) throw new Error('테이블 수 저장 실패');
             alert('테이블 수가 저장되었습니다.');
             window.location.reload();
         })
