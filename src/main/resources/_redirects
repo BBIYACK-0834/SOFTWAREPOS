@@ -1,0 +1,7 @@
+/login         /login.html         200
+/addproduct    /addproduct.html    200
+/editProduct   /editProduct.html   200
+/index         /index.html         200
+/order         /order.html         200
+/sales         /sales.html         200
+/userorder     /userorder.html     200
