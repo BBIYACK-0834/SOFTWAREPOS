@@ -1,7 +1,7 @@
 const API_BASE = "https://softwarepos.r-e.kr";
 
 function handle401(response) {
-    if (res.status === 401 || res.status === 403) {
+    if (response.status === 401 || response.status === 403) {
         window.location.href = "login";
         return true;
     }
