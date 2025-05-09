@@ -42,14 +42,22 @@ function createTables(tableCount) {
         container.appendChild(box);
     }
 
-    // 1초마다 전체 테이블 주문 갱신
+    // ✅ 최초 즉시 실행
+    refreshAllOrders(tableCount);
+
+    // ✅ 1초마다 반복 실행
     setInterval(() => {
-        serveInfoMap.clear();
-        countMap.clear();
-        for (let i = 1; i <= tableCount; i++) {
-            fetchOrders(i);
-        }
+        refreshAllOrders(tableCount);
     }, 1000);
+}
+
+function refreshAllOrders(tableCount) {
+    serveInfoMap.clear();
+    countMap.clear();
+
+    for (let i = 1; i <= tableCount; i++) {
+        fetchOrders(i);
+    }
 }
 
 function fetchOrders(tableNumber) {
@@ -79,14 +87,12 @@ function fetchOrders(tableNumber) {
 
                 const time = new Date(order.orderedAt).getTime();
 
-                // 총 수량 누적
                 if (!countMap.has(order.prodName)) {
                     countMap.set(order.prodName, order.quantity);
                 } else {
                     countMap.set(order.prodName, countMap.get(order.prodName) + order.quantity);
                 }
 
-                // 가장 오래된 주문 저장
                 if (!serveInfoMap.has(order.prodName)) {
                     serveInfoMap.set(order.prodName, {
                         table: tableNumber,
@@ -107,7 +113,6 @@ function fetchOrders(tableNumber) {
                 }
             });
 
-            // 주문 데이터를 모두 반영했으니 우선순위 갱신
             displayPriorityOrders();
         })
         .catch(error => {
