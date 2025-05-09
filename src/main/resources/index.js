@@ -40,8 +40,16 @@ function createTables(tableCount) {
             window.location.href = `order?table=${i}`;
         });
         container.appendChild(box);
-        fetchOrders(i);
     }
+
+    // 1초마다 전체 테이블 주문 갱신
+    setInterval(() => {
+        serveInfoMap.clear();
+        countMap.clear();
+        for (let i = 1; i <= tableCount; i++) {
+            fetchOrders(i);
+        }
+    }, 1000);
 }
 
 function fetchOrders(tableNumber) {
@@ -78,7 +86,7 @@ function fetchOrders(tableNumber) {
                     countMap.set(order.prodName, countMap.get(order.prodName) + order.quantity);
                 }
 
-                // 가장 오래된 주문 저장 (서빙 우선순위용)
+                // 가장 오래된 주문 저장
                 if (!serveInfoMap.has(order.prodName)) {
                     serveInfoMap.set(order.prodName, {
                         table: tableNumber,
@@ -99,13 +107,11 @@ function fetchOrders(tableNumber) {
                 }
             });
 
-            if (document.querySelectorAll('.order-list').length === count) {
-                displayPriorityOrders();
-            }
+            // 주문 데이터를 모두 반영했으니 우선순위 갱신
+            displayPriorityOrders();
         })
         .catch(error => {
             console.error('주문 조회 실패:', error);
-            alert('주문을 불러오는 데 실패했습니다.');
         });
 }
 
