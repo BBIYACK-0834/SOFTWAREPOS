@@ -20,7 +20,8 @@ window.onload = () => {
             if (!products) return;
             const tbody = document.getElementById('productTableBody');
             products.forEach(prod => {
-                const imgPath = prod.prodImage ? prod.prodImage : '/upload/default.png';
+                const hasImage = prod.prodImage && prod.prodImage.trim() !== '';
+                const imgPath = hasImage ? prod.prodImage : null;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -32,7 +33,11 @@ window.onload = () => {
                 <td>
                     <button class="edit-button" onclick="editProduct(${prod.prodNum})">수정</button>
                     <button class="delete-button" onclick="deleteProduct(${prod.prodNum}, this)">삭제</button>
-                    <button class="view-image-button" onclick="viewImage('${imgPath}')">이미지 보기</button>
+                    ${
+                    hasImage
+                        ? `<button class="view-image-button" onclick="viewImage('${imgPath}')">이미지 보기</button>`
+                        : `<span style="color: gray; font-size: 0.9em;">이미지 없음</span>`
+                }
                 </td>
             `;
                 tbody.appendChild(tr);
@@ -72,7 +77,7 @@ function deleteProduct(prodNum, button) {
 function viewImage(imagePath) {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
-    const fullImageUrl = imagePath.startsWith('http') ? imagePath : `${API_BASE}${imagePath}`;
+    const fullImageUrl = imagePath.startsWith('http') ? imagePath : `${API_BASE}/${imagePath}`;
 
     modalImg.src = fullImageUrl;
     modal.style.display = "block";
