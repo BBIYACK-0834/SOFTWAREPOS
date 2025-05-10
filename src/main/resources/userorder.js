@@ -3,11 +3,14 @@ const API_BASE = 'https://softwarepos.r-e.kr';
 const menuEl = document.getElementById('menu');
 const orderListEl = document.getElementById('order-list');
 const totalEl = document.getElementById('total');
-const modal = document.getElementById('foodModal');
+const foodModal = document.getElementById('foodModal');
 const modalImage = document.getElementById('modalImage');
 const modalName = document.getElementById('modalName');
 const modalDesc = document.getElementById('modalDesc');
+const modalPrice = document.getElementById('modalPrice');
 const modalQuantity = document.getElementById('modalQuantity');
+const orderModal = document.getElementById('orderModal');
+const orderModalList = document.getElementById('orderModalList');
 
 const order = {};
 let currentProduct = null;
@@ -56,17 +59,19 @@ fetch(`${API_BASE}/user/products`, { credentials: 'include' })
         alert('메뉴를 불러오는 데 실패했습니다.');
     });
 
+// 음식 상세 모달 열기
 function openModal(product) {
     currentProduct = product;
     modalImage.src = `https://softwarepos.r-e.kr/${product.prodImage}`;
     modalName.textContent = product.prodName;
     modalDesc.textContent = product.prodIntro;
+    modalPrice.textContent = product.prodPri.toLocaleString() + "원";
     modalQuantity.textContent = 1;
-    modal.style.display = 'flex';
+    foodModal.style.display = 'flex';
 }
 
 function closeModal() {
-    modal.style.display = 'none';
+    foodModal.style.display = 'none';
 }
 
 function changeModalQuantity(delta) {
@@ -90,6 +95,7 @@ function addToOrder() {
     closeModal();
 }
 
+// 장바구니(order) 업데이트
 function updateOrder() {
     orderListEl.innerHTML = '';
     let total = 0;
@@ -128,6 +134,7 @@ function clearOrder() {
     updateOrder();
 }
 
+// 주문 서버로 전송
 function submitOrder() {
     const requests = Object.entries(order).map(([prodName, item]) => {
         return fetch(`${API_BASE}/user/order`, {
@@ -154,18 +161,30 @@ function submitOrder() {
         });
 }
 
+// ✅ 주문 내역 모달로 보기
 function showCurrentOrders() {
     if (Object.keys(order).length === 0) {
         alert("주문 내역이 없습니다!");
         return;
     }
 
-    let orderDetails = "현재 주문 내역:\n\n";
+    orderModalList.innerHTML = ''; // 비우기
 
     for (const [name, item] of Object.entries(order)) {
-        orderDetails += `${name} x ${item.quantity}개 - ${item.price * item.quantity}원\n`;
+        const div = document.createElement('div');
+        div.className = 'modal-item';
+        div.innerHTML = `
+          <span>${name}</span>
+          <span>x${item.quantity}개</span>
+          <span>${(item.price * item.quantity).toLocaleString()}원</span>
+        `;
+        orderModalList.appendChild(div);
     }
 
-    alert(orderDetails);
+    orderModal.style.display = 'flex';
 }
 
+// 주문 모달 닫기
+function closeOrderModal() {
+    orderModal.style.display = 'none';
+}
