@@ -20,18 +20,21 @@ window.onload = () => {
             if (!products) return;
             const tbody = document.getElementById('productTableBody');
             products.forEach(prod => {
+                const imgPath = prod.prodImage ? prod.prodImage : '/upload/default.png';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${prod.prodNum}</td>
-                    <td>${prod.prodName}</td>
-                    <td>${prod.prodIntro}</td>
-                    <td>${prod.prodStatus}</td>
-                    <td>${prod.prodPri.toLocaleString()}원</td>
-                    <td>
-                        <button class="edit-button" onclick="editProduct(${prod.prodNum})">수정</button>
-                        <button class="delete-button" onclick="deleteProduct(${prod.prodNum}, this)">삭제</button>
-                    </td>
-                `;
+                <td>${prod.prodNum}</td>
+                <td>${prod.prodName}</td>
+                <td>${prod.prodIntro}</td>
+                <td>${prod.prodStatus}</td>
+                <td>${prod.prodPri.toLocaleString()}원</td>
+                <td>
+                    <button class="edit-button" onclick="editProduct(${prod.prodNum})">수정</button>
+                    <button class="delete-button" onclick="deleteProduct(${prod.prodNum}, this)">삭제</button>
+                    <button class="view-image-button" onclick="viewImage('${imgPath}')">이미지 보기</button>
+                </td>
+            `;
                 tbody.appendChild(tr);
             });
         })
@@ -64,3 +67,26 @@ function deleteProduct(prodNum, button) {
             alert('상품 삭제에 실패했습니다.');
         });
 }
+
+// ✅ 이미지 보기 Modal 띄우기
+function viewImage(imagePath) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const fullImageUrl = imagePath.startsWith('http') ? imagePath : `${API_BASE}${imagePath}`;
+
+    modalImg.src = fullImageUrl;
+    modal.style.display = "block";
+}
+
+// ✅ Modal 닫기
+document.querySelector(".close").onclick = function () {
+    document.getElementById('imageModal').style.display = "none";
+};
+
+// 클릭해서 모달 바깥 영역 클릭시 닫기
+window.onclick = function(event) {
+    const modal = document.getElementById('imageModal');
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+};
