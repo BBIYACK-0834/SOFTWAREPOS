@@ -3,11 +3,14 @@ const API_BASE = 'https://softwarepos.r-e.kr';
 const menuEl = document.getElementById('menu');
 const orderListEl = document.getElementById('order-list');
 const totalEl = document.getElementById('total');
-const modalOrderList = document.getElementById('modalOrderList');
-const menuRankingList = document.getElementById('menuRankingList');
-const modal = document.getElementById('orderModal');
-const order = {};
+const modal = document.getElementById('foodModal');
+const modalImage = document.getElementById('modalImage');
+const modalName = document.getElementById('modalName');
+const modalDesc = document.getElementById('modalDesc');
+const modalQuantity = document.getElementById('modalQuantity');
 
+const order = {};
+let currentProduct = null;
 const urlParams = new URLSearchParams(window.location.search);
 const tableNumber = urlParams.get('table');
 
@@ -40,21 +43,11 @@ fetch(`${API_BASE}/user/products`, { credentials: 'include' })
                 : '';
 
             btn.innerHTML = `
-                ${imgTag}
-                <strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원
-            `;
+        ${imgTag}
+        <strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원
+      `;
 
-            btn.addEventListener('click', () => {
-                if (order[p.prodName]) {
-                    order[p.prodName].quantity += 1;
-                } else {
-                    order[p.prodName] = {
-                        price: p.prodPri,
-                        quantity: 1
-                    };
-                }
-                updateOrder();
-            });
+            btn.addEventListener('click', () => openModal(p));
             menuEl.appendChild(btn);
         });
     })
@@ -63,6 +56,40 @@ fetch(`${API_BASE}/user/products`, { credentials: 'include' })
         alert('메뉴를 불러오는 데 실패했습니다.');
     });
 
+function openModal(product) {
+    currentProduct = product;
+    modalImage.src = `https://softwarepos.r-e.kr/${product.prodImage}`;
+    modalName.textContent = product.prodName;
+    modalDesc.textContent = product.prodIntro;
+    modalQuantity.textContent = 1;
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    modal.style.display = 'none';
+}
+
+function changeModalQuantity(delta) {
+    let quantity = parseInt(modalQuantity.textContent);
+    quantity += delta;
+    if (quantity < 1) quantity = 1;
+    modalQuantity.textContent = quantity;
+}
+
+function addToOrder() {
+    const quantity = parseInt(modalQuantity.textContent);
+    if (order[currentProduct.prodName]) {
+        order[currentProduct.prodName].quantity += quantity;
+    } else {
+        order[currentProduct.prodName] = {
+            price: currentProduct.prodPri,
+            quantity: quantity
+        };
+    }
+    updateOrder();
+    closeModal();
+}
+
 function updateOrder() {
     orderListEl.innerHTML = '';
     let total = 0;
@@ -70,14 +97,12 @@ function updateOrder() {
     for (const [name, item] of Object.entries(order)) {
         const div = document.createElement('div');
         div.className = 'order-item';
-
         const left = document.createElement('span');
         left.innerHTML = `
-            ${name} x${item.quantity}
-            <button onclick="changeQuantity('${name}', -1)">-</button>
-            <button onclick="changeQuantity('${name}', 1)">+</button>
-        `;
-
+      ${name} x${item.quantity}
+      <button onclick="changeQuantity('${name}', -1)">-</button>
+      <button onclick="changeQuantity('${name}', 1)">+</button>
+    `;
         const right = document.createElement('span');
         const subtotal = item.price * item.quantity;
         total += subtotal;
@@ -93,13 +118,8 @@ function updateOrder() {
 
 function changeQuantity(name, delta) {
     if (!order[name]) return;
-
     order[name].quantity += delta;
-
-    if (order[name].quantity <= 0) {
-        delete order[name];
-    }
-
+    if (order[name].quantity <= 0) delete order[name];
     updateOrder();
 }
 
@@ -135,71 +155,17 @@ function submitOrder() {
 }
 
 function showCurrentOrders() {
-    fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
-        .then(response => {
-            if (handle401(response)) return;
-            return response.json();
-        })
-        .then(data => {
-            modalOrderList.innerHTML = '';
-            const myMenuNames = [];
+    if (Object.keys(order).length === 0) {
+        alert("주문 내역이 없습니다!");
+        return;
+    }
 
-            if (data.length === 0) {
-                modalOrderList.innerHTML = "<p>주문 내역이 없습니다.</p>";
-            } else {
-                data.forEach(order => {
-                    myMenuNames.push(order.prodName);
-                    const div = document.createElement('div');
-                    div.className = 'modal-item';
-                    div.innerHTML = `
-                        <span style="flex: 1; text-align: left;">${order.prodName}</span>
-                        <span style="flex: 0 0 auto;">x${order.quantity}</span>
-                    `;
-                    modalOrderList.appendChild(div);
-                });
-            }
+    let orderDetails = "현재 주문 내역:\n\n";
 
-            fetch(`${API_BASE}/user/order/all`, { credentials: 'include' })
-                .then(response => {
-                    if (handle401(response)) return;
-                    return response.json();
-                })
-                .then(allOrders => {
-                    const grouped = {};
-                    menuRankingList.innerHTML = '';
+    for (const [name, item] of Object.entries(order)) {
+        orderDetails += `${name} x ${item.quantity}개 - ${item.price * item.quantity}원\n`;
+    }
 
-                    allOrders.forEach(order => {
-                        if (!myMenuNames.includes(order.prodName)) return;
-                        if (!grouped[order.prodName]) grouped[order.prodName] = [];
-                        grouped[order.prodName].push(order);
-                    });
-
-                    Object.entries(grouped).forEach(([prodName, orders]) => {
-                        orders.sort((a, b) => new Date(a.orderedAt) - new Date(b.orderedAt));
-
-                        const title = document.createElement('div');
-                        title.style = 'font-weight: bold; margin-top: 10px;';
-                        title.textContent = `🍽️ ${prodName}`;
-                        menuRankingList.appendChild(title);
-
-                        orders.forEach((order, index) => {
-                            if (String(order.tableNumber) !== String(tableNumber)) return;
-
-                            const div = document.createElement('div');
-                            div.style = 'margin-left: 10px; font-size: 14px;';
-                            const time = new Date(order.orderedAt).toLocaleTimeString('ko-KR', {
-                                hour: '2-digit', minute: '2-digit'
-                            });
-                            div.textContent = `${index + 1}번째로 조리중이에요 (${time})`;
-                            menuRankingList.appendChild(div);
-                        });
-                    });
-
-                    modal.style.display = 'flex';
-                });
-        });
+    alert(orderDetails);
 }
 
-function closeModal() {
-    modal.style.display = 'none';
-}

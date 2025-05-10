@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>사용자 주문</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 모바일 대응 -->
     <style>
         /* 기본 스타일 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background: #f4f4f4;
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
 
         header {
-            background-color: #333;
+            background: #333;
             color: white;
             text-align: center;
             padding: 15px 0;
@@ -26,12 +27,12 @@
             flex: 2;
             overflow-y: auto;
             padding: 20px;
-            background-color: #ffffff;
+            background: #fff;
         }
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
         }
 
@@ -39,7 +40,7 @@
             padding: 10px;
             font-size: 16px;
             border: 1px solid #ccc;
-            background-color: #f0f0f0;
+            background: #f0f0f0;
             cursor: pointer;
             border-radius: 8px;
             display: flex;
@@ -47,32 +48,26 @@
             align-items: center;
         }
 
-        .menu-grid button:hover {
-            background-color: #ddd;
-        }
-
         .menu-grid img {
             width: 100px;
             height: 100px;
             object-fit: cover;
-            margin-bottom: 8px;
             border-radius: 6px;
+            margin-bottom: 8px;
         }
 
         .order-summary {
             flex: 1;
-            background-color: #fff;
+            background: #fff;
             border-top: 2px solid #ccc;
             padding: 15px 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
 
         .order-items {
             overflow-y: auto;
             max-height: 150px;
-            margin-bottom: 10px;
         }
 
         .order-item {
@@ -98,20 +93,9 @@
             cursor: pointer;
         }
 
-        .actions button:nth-child(1) {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .actions button:nth-child(2) {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .actions button:nth-child(3) {
-            background-color: #999;
-            color: white;
-        }
+        .actions button:nth-child(1) { background: #2196F3; color: white; }
+        .actions button:nth-child(2) { background: #4CAF50; color: white; }
+        .actions button:nth-child(3) { background: #999; color: white; }
 
         #total {
             font-weight: bold;
@@ -119,53 +103,81 @@
             margin-top: 5px;
         }
 
+        /* 모달 */
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             justify-content: center;
             align-items: center;
         }
 
         .modal-content {
-            background-color: #fff;
+            background: white;
             padding: 20px;
-            width: 90%;
-            max-width: 500px;
             border-radius: 10px;
-            max-height: 90%;
-            overflow-y: auto;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
 
         .modal-content h3 {
-            text-align: center;
-            margin-top: 0;
+            margin: 10px 0;
         }
 
-        .modal-item {
+        .quantity-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .quantity-controls button {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            margin: 0 10px;
+            border-radius: 50%;
+            background: #ddd;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-buttons {
             display: flex;
             justify-content: space-between;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-
-        .close-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 8px 12px;
             margin-top: 15px;
-            cursor: pointer;
-            float: right;
         }
 
-        .close-btn:hover {
-            background-color: #c62828;
+        .modal-buttons button {
+            flex: 1;
+            margin: 0 5px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .modal-buttons .add-btn { background: #4CAF50; color: white; }
+        .modal-buttons .cancel-btn { background: #f44336; color: white; }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
         }
     </style>
 </head>
@@ -189,16 +201,21 @@
     </div>
 </div>
 
-<div class="modal" id="orderModal">
+<!-- 음식 상세 모달 -->
+<div class="modal" id="foodModal">
     <div class="modal-content">
-        <h3>현재 주문 내역</h3>
-        <div id="modalOrderList"></div>
-
-        <hr style="margin: 20px 0;">
-        <h3>현재 테이블 기준 조리 순서</h3>
-        <div id="menuRankingList"></div>
-
-        <button class="close-btn" onclick="closeModal()">닫기</button>
+        <img id="modalImage" src="" alt="음식 이미지">
+        <h3 id="modalName"></h3>
+        <p id="modalDesc"></p>
+        <div class="quantity-controls">
+            <button onclick="changeModalQuantity(-1)">-</button>
+            <span id="modalQuantity">1</span>
+            <button onclick="changeModalQuantity(1)">+</button>
+        </div>
+        <div class="modal-buttons">
+            <button class="add-btn" onclick="addToOrder()">추가</button>
+            <button class="cancel-btn" onclick="closeModal()">취소</button>
+        </div>
     </div>
 </div>
 
