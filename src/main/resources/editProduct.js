@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'sales';
             })
             .catch(err => {
-                errorBox.textContent = prodNum ? '❌ 상품 수정 중 오류 발생' : '상품 등록 중 오류 발생';
+                errorBox.textContent = prodNum ? '상품 수정 중 오류 발생' : '상품 등록 중 오류 발생';
                 console.error(err);
             });
     });

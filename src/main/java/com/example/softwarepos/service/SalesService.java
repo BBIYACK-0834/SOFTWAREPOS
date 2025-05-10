@@ -28,33 +28,33 @@ public class SalesService {
         String savedImagePath = saveFile(file);
 
         SalesEntity product = SalesEntity.builder()
-                .prodNum(dto.getProdNum())
                 .prodName(dto.getProdName())
                 .prodIntro(dto.getProdIntro())
                 .prodStatus(dto.getProdStatus())
                 .prodPri(dto.getProdPri())
-                .prodImage(dto.getProdImage())
+                .prodImage(savedImagePath) // ✅ 저장된 파일 경로 넣기
                 .build();
 
         salesRepository.save(product);
     }
 
     // 상품 수정
-    public void updateProduct(Long prodNum, Salesdto dto, MultipartFile file) {
+    public void updateProduct(Long prodNum, Salesdto dto, MultipartFile file) throws IOException {
         SalesEntity existing = salesRepository.findById(prodNum)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + prodNum));
+
+        String savedImagePath = saveFile(file);
 
         existing.updateProduct(
                 dto.getProdName(),
                 dto.getProdIntro(),
                 dto.getProdStatus(),
                 dto.getProdPri(),
-                dto.getProdImage()
+                savedImagePath != null ? savedImagePath : existing.getProdImage() // ✅ 새 파일 없으면 기존 이미지 유지
         );
 
         salesRepository.save(existing);
     }
-
 
     // 상품 삭제
     public void deleteProduct(Long prodNum) {
@@ -75,7 +75,7 @@ public class SalesService {
                 .build()).collect(Collectors.toList());
     }
 
-    // ✅ 개별 상품 조회
+    // 개별 상품 조회
     public Salesdto getProductByNum(Long prodNum) {
         SalesEntity product = salesRepository.findById(prodNum)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + prodNum));
@@ -89,8 +89,9 @@ public class SalesService {
                 .prodImage(product.getProdImage())
                 .build();
     }
+
     private String saveFile(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             return null;
         }
 
