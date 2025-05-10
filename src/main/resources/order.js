@@ -2,9 +2,10 @@ const tableNumber = new URLSearchParams(window.location.search).get('table');
 const orderItemsContainer = document.getElementById('order-items');
 const totalPriceElement = document.getElementById('total-price');
 const menuSection = document.getElementById('menu-section');
-const sessionOrders = [];
-let activeOrders = [];
-let menuList = [];
+
+let originOrders = []; // 서버에서 받은 기존 주문들
+let newOrders = []; // 새로 추가한 주문들
+let menuList = []; // 전체 메뉴 목록
 
 function calculateElapsedTime(orderTime) {
     const now = new Date();
@@ -15,21 +16,46 @@ function calculateElapsedTime(orderTime) {
 }
 
 function fetchOrders() {
-    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, {
-        credentials: 'include'
-    })
+    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
-            renderOrders([...data, ...sessionOrders]);
+            originOrders = data.map(order => ({ ...order })); // 깊은 복사
+            renderOrders();
         });
 }
 
-function renderOrders(orderList) {
+function fetchMenu() {
+    fetch('https://softwarepos.r-e.kr/user/products', { credentials: 'include' })
+        .then(res => res.json())
+        .then(products => {
+            menuList = products;
+            products.forEach(p => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
+                btn.onclick = () => {
+                    const existing = newOrders.find(o => o.prodName === p.prodName);
+                    if (existing) {
+                        existing.quantity += 1;
+                    } else {
+                        newOrders.push({
+                            prodName: p.prodName,
+                            quantity: 1,
+                            orderedAt: new Date()
+                        });
+                    }
+                    renderOrders();
+                };
+                menuSection.appendChild(btn);
+            });
+        });
+}
+
+function renderOrders() {
     orderItemsContainer.innerHTML = '';
-    activeOrders = orderList.map(order => ({ ...order }));
     let total = 0;
 
-    activeOrders.forEach((order, index) => {
+    // 기존 주문들 렌더링
+    originOrders.forEach((order, index) => {
         const menuItem = menuList.find(m => m.prodName === order.prodName);
         const price = menuItem ? menuItem.prodPri : 0;
         const orderTotalPrice = price * order.quantity;
@@ -40,101 +66,70 @@ function renderOrders(orderList) {
 
         const quantityControls = `
             <div class="quantity-controls">
-                <button onclick="updateQuantity(${index}, -1)">-</button>
+                <button onclick="updateOriginQuantity(${index}, -1)">-</button>
                 ${order.quantity}개
-                <button onclick="updateQuantity(${index}, 1)">+</button>
+                <button onclick="updateOriginQuantity(${index}, 1)">+</button>
             </div>
         `;
 
         item.innerHTML = `
-            <div>${order.prodName}</div>
+            <div>[기존] ${order.prodName}</div>
             ${quantityControls}
             <div>${orderTotalPrice.toLocaleString()}원</div>
-            <div>주문 후 ${calculateElapsedTime(order.orderedAt || new Date())}</div>
+            <div>주문 후 ${calculateElapsedTime(order.orderedAt)}</div>
         `;
 
         orderItemsContainer.appendChild(item);
-        order.price = price;
+    });
+
+    // 새 주문들 렌더링
+    newOrders.forEach((order, index) => {
+        const menuItem = menuList.find(m => m.prodName === order.prodName);
+        const price = menuItem ? menuItem.prodPri : 0;
+        const orderTotalPrice = price * order.quantity;
+        total += orderTotalPrice;
+
+        const item = document.createElement('div');
+        item.className = 'order-item';
+
+        const quantityControls = `
+            <div class="quantity-controls">
+                <button onclick="updateNewQuantity(${index}, -1)">-</button>
+                ${order.quantity}개
+                <button onclick="updateNewQuantity(${index}, 1)">+</button>
+            </div>
+        `;
+
+        item.innerHTML = `
+            <div>[신규] ${order.prodName}</div>
+            ${quantityControls}
+            <div>${orderTotalPrice.toLocaleString()}원</div>
+        `;
+
+        orderItemsContainer.appendChild(item);
     });
 
     totalPriceElement.textContent = `총액: ${total.toLocaleString()}원`;
 }
 
-function updateQuantity(index, delta) {
-    const order = activeOrders[index];
-    const newQuantity = order.quantity + delta;
-
-    if (newQuantity <= 0) {
-        if (order.orderNum) {
-            fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            }).then(fetchOrders);
-        } else {
-            const sessionIndex = sessionOrders.findIndex(o => o.prodName === order.prodName);
-            if (sessionIndex !== -1) {
-                sessionOrders.splice(sessionIndex, 1);
-            }
-            fetchOrders();
-        }
-        return;
-    }
-
-    order.quantity = newQuantity;
-
-    if (order.orderNum) {
-        fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                prodName: order.prodName,
-                quantity: order.quantity,
-                price: order.price,
-                tableNumber: parseInt(tableNumber)
-            })
-        }).then(() => renderOrders(activeOrders));
-    } else {
-        const sessionOrder = sessionOrders.find(o => o.prodName === order.prodName);
-        if (sessionOrder) {
-            sessionOrder.quantity = order.quantity;
-        }
-        renderOrders(activeOrders);
-    }
+function updateOriginQuantity(index, delta) {
+    const order = originOrders[index];
+    order.quantity += delta;
+    if (order.quantity < 0) order.quantity = 0;
+    renderOrders();
 }
 
-function fetchMenu() {
-    fetch('https://softwarepos.r-e.kr/user/products', {
-        credentials: 'include'
-    })
-        .then(res => res.json())
-        .then(products => {
-            menuList = products;
-            products.forEach(p => {
-                const btn = document.createElement('button');
-                btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
-                btn.onclick = () => {
-                    const existing = sessionOrders.find(o => o.prodName === p.prodName);
-                    if (existing) {
-                        existing.quantity += 1;
-                    } else {
-                        sessionOrders.push({
-                            prodName: p.prodName,
-                            quantity: 1,
-                            orderedAt: new Date()
-                        });
-                    }
-                    fetchOrders();
-                };
-                menuSection.appendChild(btn);
-            });
-        });
+function updateNewQuantity(index, delta) {
+    const order = newOrders[index];
+    order.quantity += delta;
+    if (order.quantity <= 0) {
+        newOrders.splice(index, 1);
+    }
+    renderOrders();
 }
 
 document.getElementById('clear-button').onclick = () => {
-    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, {
-        credentials: 'include'
-    })
+    fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, { credentials: 'include' })
         .then(res => res.json())
         .then(orders => {
             const deletes = orders.map(o =>
@@ -146,7 +141,8 @@ document.getElementById('clear-button').onclick = () => {
             return Promise.all(deletes);
         })
         .then(() => {
-            sessionOrders.length = 0;
+            originOrders = [];
+            newOrders = [];
             fetchOrders();
             window.location.href = 'index';
         });
@@ -157,7 +153,32 @@ document.getElementById('cancel-button').onclick = () => {
 };
 
 document.getElementById('order-button').onclick = () => {
-    const postRequests = sessionOrders.map(order => {
+    const putRequests = originOrders
+        .filter(order => order.quantity > 0 && order.quantity !== order.originalQuantity)
+        .map(order =>
+            fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    prodName: order.prodName,
+                    quantity: order.quantity,
+                    price: order.price,
+                    tableNumber: parseInt(tableNumber)
+                })
+            })
+        );
+
+    const deleteRequests = originOrders
+        .filter(order => order.quantity === 0)
+        .map(order =>
+            fetch(`https://softwarepos.r-e.kr/admin/${order.orderNum}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+        );
+
+    const postRequests = newOrders.map(order => {
         const menuItem = menuList.find(m => m.prodName === order.prodName);
         const price = menuItem ? menuItem.prodPri : 0;
 
@@ -174,9 +195,10 @@ document.getElementById('order-button').onclick = () => {
         });
     });
 
-    Promise.all(postRequests)
+    Promise.all([...putRequests, ...deleteRequests, ...postRequests])
         .then(() => {
-            sessionOrders.length = 0;
+            originOrders = [];
+            newOrders = [];
             window.location.href = 'index';
         });
 };
