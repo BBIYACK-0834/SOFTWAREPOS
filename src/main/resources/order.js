@@ -19,10 +19,19 @@ function fetchOrders() {
     fetch(`https://softwarepos.r-e.kr/user/order/${tableNumber}`, { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
-            originOrders = data.map(order => ({ ...order })); // 깊은 복사
+            originOrders = data.map(order => {
+                const menuItem = menuList.find(m => m.prodName === order.prodName);
+                const price = menuItem ? menuItem.prodPri : 0;
+                return {
+                    ...order,
+                    price: price,
+                    originalQuantity: order.quantity // 수량 비교용 저장
+                };
+            });
             renderOrders();
         });
 }
+
 
 function fetchMenu() {
     fetch('https://softwarepos.r-e.kr/user/products', { credentials: 'include' })
