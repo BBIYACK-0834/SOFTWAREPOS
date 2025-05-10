@@ -14,27 +14,23 @@
             flex-direction: column;
             height: 100vh;
         }
-
         header {
             background: #333;
             color: white;
             text-align: center;
             padding: 15px 0;
         }
-
         .menu-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             background: #fff;
         }
-
         .menu-grid {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .menu-grid button {
             width: 100%;
             padding: 15px;
@@ -47,7 +43,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         .menu-grid img {
             width: 120px;
             height: 120px;
@@ -55,7 +50,6 @@
             border-radius: 6px;
             margin-bottom: 10px;
         }
-
         .order-summary {
             background: #fff;
             border-top: 2px solid #ccc;
@@ -64,18 +58,15 @@
             flex-direction: column;
             justify-content: flex-end;
         }
-
         .order-items {
             overflow-y: auto;
             max-height: 200px;
         }
-
         .actions {
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
         }
-
         .actions button {
             flex: 1;
             margin: 0 5px;
@@ -85,18 +76,15 @@
             border-radius: 6px;
             cursor: pointer;
         }
-
         .actions button:nth-child(1) { background: #2196F3; color: white; }
         .actions button:nth-child(2) { background: #4CAF50; color: white; }
         .actions button:nth-child(3) { background: #999; color: white; }
-
         #total {
             font-weight: bold;
             text-align: right;
             margin-top: 10px;
             margin-bottom: 10px;
         }
-
         .modal {
             display: none;
             position: fixed;
@@ -109,16 +97,14 @@
             justify-content: center;
             align-items: center;
         }
-
-        #foodModal .modal-content {
+        #foodModal .modal-content, #orderModal .modal-content {
             background: white;
             padding: 30px;
             border-radius: 10px;
-            width: 600px;
-            max-width: 90%;
+            width: 450px;
+            max-width: 95%;
             text-align: center;
         }
-
         #modalImage {
             width: 360px;
             height: 360px;
@@ -126,30 +112,51 @@
             border-radius: 8px;
             margin-bottom: 15px;
         }
-
-        #orderModal .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 400px;
-            max-width: 90%;
+        #orderModalList {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
+            gap: 10px;
         }
-
+        #menuRankingList {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            gap: 10px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .modal-item {
+            width: 100%;
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
-            font-size: 16px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
         }
-
+        .menu-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .menu-step {
+            font-size: 15px;
+            margin-top: 5px;
+            color: #555;
+            text-align: left;
+        }
         .quantity-controls {
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 15px 0;
         }
-
         .quantity-controls button {
             width: 40px;
             height: 40px;
@@ -160,13 +167,11 @@
             border: none;
             cursor: pointer;
         }
-
         .modal-buttons {
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
         }
-
         .modal-buttons button {
             flex: 1;
             margin: 0 5px;
@@ -176,18 +181,8 @@
             font-size: 16px;
             cursor: pointer;
         }
-
         .modal-buttons .add-btn { background: #4CAF50; color: white; }
         .modal-buttons .cancel-btn { background: #f44336; color: white; }
-
-        @media (max-width: 768px) {
-            .menu-grid {
-                flex-direction: column;
-            }
-            #foodModal .modal-content {
-                width: 95%;
-            }
-        }
     </style>
 </head>
 
@@ -232,11 +227,11 @@
 <div class="modal" id="orderModal">
     <div class="modal-content">
         <h3>현재 주문 내역</h3>
-        <div id="orderModalList" style="margin-top: 10px;"></div>
-        <hr style="margin: 20px 0;">
+        <div id="orderModalList"></div>
+        <hr style="margin:20px 0;">
         <h3>조리 순서</h3>
-        <div id="menuRankingList" style="margin-top: 10px;"></div>
-        <button class="cancel-btn" onclick="closeOrderModal()">닫기</button>
+        <div id="menuRankingList"></div>
+        <button class="cancel-btn" style="margin-top:20px;" onclick="closeOrderModal()">닫기</button>
     </div>
 </div>
 
