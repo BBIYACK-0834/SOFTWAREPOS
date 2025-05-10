@@ -163,25 +163,74 @@ function submitOrder() {
 
 // ✅ 주문 내역 모달로 보기
 function showCurrentOrders() {
-    if (Object.keys(order).length === 0) {
-        alert("주문 내역이 없습니다!");
-        return;
-    }
+    fetch(`${API_BASE}/user/order/${tableNumber}`, { credentials: 'include' })
+        .then(response => {
+            if (handle401(response)) return;
+            return response.json();
+        })
+        .then(data => {
+            const orderModalList = document.getElementById('orderModalList'); // id 찾기
+            const menuRankingList = document.getElementById('menuRankingList'); // id 찾기
+            const orderModal = document.getElementById('orderModal');
 
-    orderModalList.innerHTML = ''; // 비우기
+            orderModalList.innerHTML = '';
+            const myMenuNames = [];
 
-    for (const [name, item] of Object.entries(order)) {
-        const div = document.createElement('div');
-        div.className = 'modal-item';
-        div.innerHTML = `
-          <span>${name}</span>
-          <span>x${item.quantity}개</span>
-          <span>${(item.price * item.quantity).toLocaleString()}원</span>
-        `;
-        orderModalList.appendChild(div);
-    }
+            if (data.length === 0) {
+                orderModalList.innerHTML = "<p>주문 내역이 없습니다.</p>";
+            } else {
+                data.forEach(order => {
+                    myMenuNames.push(order.prodName);
+                    const div = document.createElement('div');
+                    div.className = 'modal-item';
+                    div.innerHTML = `
+                        <span style="flex: 1; text-align: left;">${order.prodName}</span>
+                        <span style="flex: 0 0 auto;">x${order.quantity}</span>
+                    `;
+                    orderModalList.appendChild(div);
+                });
+            }
 
-    orderModal.style.display = 'flex';
+            fetch(`${API_BASE}/user/order/all`, { credentials: 'include' })
+                .then(response => {
+                    if (handle401(response)) return;
+                    return response.json();
+                })
+                .then(allOrders => {
+                    const grouped = {};
+                    menuRankingList.innerHTML = '';
+
+                    allOrders.forEach(order => {
+                        if (!myMenuNames.includes(order.prodName)) return;
+                        if (!grouped[order.prodName]) grouped[order.prodName] = [];
+                        grouped[order.prodName].push(order);
+                    });
+
+                    Object.entries(grouped).forEach(([prodName, orders]) => {
+                        orders.sort((a, b) => new Date(a.orderedAt) - new Date(b.orderedAt));
+
+                        const title = document.createElement('div');
+                        title.style = 'font-weight: bold; margin-top: 10px;';
+                        title.textContent = `🍽️ ${prodName}`;
+                        menuRankingList.appendChild(title);
+
+                        orders.forEach((order, index) => {
+                            if (String(order.tableNumber) !== String(tableNumber)) return;
+
+                            const div = document.createElement('div');
+                            div.style = 'margin-left: 10px; font-size: 14px;';
+                            const time = new Date(order.orderedAt).toLocaleTimeString('ko-KR', {
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                            div.textContent = `${index + 1}번째로 조리중이에요 (${time})`;
+                            menuRankingList.appendChild(div);
+                        });
+                    });
+
+                    orderModal.style.display = 'flex';
+                });
+        });
+
 }
 
 // 주문 모달 닫기
