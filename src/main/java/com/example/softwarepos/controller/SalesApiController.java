@@ -5,34 +5,40 @@ import com.example.softwarepos.service.SalesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping()
+@RequestMapping
 public class SalesApiController {
 
     private final SalesService salesService;
 
-    // ✅ 상품 등록
+    // ✅ 상품 등록 (DTO + 파일 받기)
     @PostMapping("/admin/products")
-    public ResponseEntity<?> create(@RequestBody Salesdto dto) {
+    public ResponseEntity<?> create(
+            @RequestPart("dto") Salesdto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            salesService.addProduct(dto);
+            salesService.addProduct(dto, file);
             return ResponseEntity.ok("상품 등록 성공");
-        } catch (IllegalStateException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // ✅ 상품 수정
+    // ✅ 상품 수정 (DTO + 파일 받기)
     @PutMapping("/admin/products/{prodNum}")
-    public ResponseEntity<?> update(@PathVariable Long prodNum, @RequestBody Salesdto dto) {
+    public ResponseEntity<?> update(
+            @PathVariable Long prodNum,
+            @RequestPart("dto") Salesdto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            salesService.updateProduct(prodNum, dto);
+            salesService.updateProduct(prodNum, dto, file);
             return ResponseEntity.ok("상품 수정 성공");
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -43,7 +49,7 @@ public class SalesApiController {
         try {
             salesService.deleteProduct(prodNum);
             return ResponseEntity.ok("상품 삭제 성공");
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -60,7 +66,7 @@ public class SalesApiController {
         try {
             Salesdto dto = salesService.getProductByNum(prodNum);
             return ResponseEntity.ok(dto);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

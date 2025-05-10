@@ -34,7 +34,16 @@ fetch(`${API_BASE}/user/products`, { credentials: 'include' })
         if (!products) return;
         products.forEach(p => {
             const btn = document.createElement('button');
-            btn.innerHTML = `<strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원`;
+
+            const imgTag = p.prodImage
+                ? `<img src="https://softwarepos.r-e.kr/${p.prodImage}" alt="${p.prodName}">`
+                : '';
+
+            btn.innerHTML = `
+                ${imgTag}
+                <strong>${p.prodName}</strong><br>${p.prodPri.toLocaleString()}원
+            `;
+
             btn.addEventListener('click', () => {
                 if (order[p.prodName]) {
                     order[p.prodName].quantity += 1;
