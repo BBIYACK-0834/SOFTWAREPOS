@@ -17,6 +17,7 @@ window.onload = () => {
             return res.json();
         })
         .then(products => {
+            console.log(products);
             if (!products) return;
             const tbody = document.getElementById('productTableBody');
             products.forEach(prod => {
