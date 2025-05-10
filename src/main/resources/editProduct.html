@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>상품 수정</title>
+    <title>상품 추가/수정</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -44,20 +44,25 @@
             background-color: #45a049;
         }
 
+        img {
+            display: block;
+            max-width: 200px;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+
         .error {
             color: red;
             text-align: center;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-<h1>상품 수정</h1>
+<h1 id="pageTitle">상품 추가</h1>
 
-<div class="error" id="error-message"></div>
-
-<form id="productForm">
+<form id="productForm" enctype="multipart/form-data">
     <label for="prodName">상품명</label>
     <input type="text" id="prodName" name="prodName" required>
 
@@ -72,10 +77,17 @@
     </select>
 
     <label for="prodPri">상품 가격</label>
-    <input type="number" id="prodPri" name="prodPri" required min="0">
+    <input type="number" id="prodPri" name="prodPri" required>
+
+    <label for="prodImage">상품 이미지</label>
+    <input type="file" id="prodImage" name="prodImage" accept="image/*">
+
+    <img id="preview" src="#" alt="기존 이미지" style="display:none;">
 
     <button type="submit">저장</button>
 </form>
+
+<div id="error-message" class="error"></div>
 
 <script src="editProduct.js"></script>
 

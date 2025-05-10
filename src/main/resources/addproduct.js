@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('prodPri').value = data.prodPri;
             })
             .catch(err => {
-                errorBox.textContent = '❌ 상품 정보를 불러오지 못했습니다.';
+                errorBox.textContent = '상품 정보를 불러오지 못했습니다.';
                 console.error(err);
             });
     }
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const price = parseInt(document.getElementById('prodPri').value);
 
         if (!name || isNaN(price) || price < 0) {
-            errorBox.textContent = '❗ 유효한 상품명과 0 이상의 가격을 입력하세요.';
+            errorBox.textContent = '유효한 상품명과 0 이상의 가격을 입력하세요.';
             return;
         }
 
@@ -71,11 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                     if (!res.ok) throw new Error("수정 실패");
-                    alert('✅ 상품이 수정되었습니다.');
+                    alert('상품이 수정되었습니다.');
                     window.location.href = 'sales';
                 })
                 .catch(err => {
-                    errorBox.textContent = '❌ 상품 수정 중 오류가 발생했습니다.';
+                    errorBox.textContent = '상품 수정 중 오류가 발생했습니다.';
                     console.error(err);
                 });
 
@@ -92,11 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                     if (!res.ok) throw new Error("등록 실패");
-                    alert('✅ 상품이 등록되었습니다.');
+                    alert('상품이 등록되었습니다.');
                     window.location.href = 'sales';
                 })
                 .catch(err => {
-                    errorBox.textContent = '❌ 상품 등록 중 오류가 발생했습니다.';
+                    errorBox.textContent = '상품 등록 중 오류가 발생했습니다.';
                     console.error(err);
                 });
         }
